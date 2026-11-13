@@ -1,0 +1,60 @@
+name: "Relato de Bug / Defeito"
+description: "Informe um erro inesperado, inconsistência ou comportamento incorreto."
+title: "[BUG] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por relatar um problema no **Atlas Santos**. Antes de abrir a issue, certifique-se de que não existem dados pessoais sensíveis ou credenciais expostas no relato.
+  - type: input
+    id: affected-rf-rn
+    attributes:
+      label: "Requisito ou Regra Afetada (RF / RN / RNF)"
+      description: "Informe o identificador do requisito no documento de requisitos (ex: RF-08, RN-03, RNF-01)."
+      placeholder: "Ex: RF-09, RN-05"
+    validations:
+      required: false
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: "Descrição do Problema"
+      description: "Uma explicação clara e objetiva do erro ocorrido."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: "Passos para Reprodução"
+      description: "Descreva a sequência de passos necessária para reproduzir o comportamento."
+      value: |
+        1. Acesse '...'
+        2. Execute a ação '...'
+        3. Observe o erro '...'
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: "Comportamento Esperado"
+      description: "O que deveria ter acontecido segundo as regras de negócio e requisitos."
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: "Ambiente"
+      options:
+        - Desenvolvimento Local
+        - Homologação (Staging Railway)
+        - Produção (Railway)
+    validations:
+      required: true
+  - type: textarea
+    id: logs-evidence
+    attributes:
+      label: "Evidências e Logs"
+      description: "Insira mensagens de log sanitizadas (NÃO inclua senhas, tokens ou dados pessoais de estudantes/servidores)."
+    validations:
+      required: false
+

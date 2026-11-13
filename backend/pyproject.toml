@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atlas-santos-backend"
+version = "0.1.0"
+description = "Backend Modular Monolith API and Background Worker for Atlas Santos"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "Atlas Santos Engineering Team" }
+]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Framework :: FastAPI",
+]
+dependencies = [
+    "fastapi>=0.115.0,<0.116.0",
+    "pydantic>=2.10.0,<2.11.0",
+    "pydantic-settings>=2.6.0,<2.7.0",
+    "sqlalchemy>=2.0.35,<2.1.0",
+    "alembic>=1.14.0,<1.15.0",
+    "psycopg[binary]>=3.2.0,<3.3.0",
+    "uvicorn[standard]>=0.32.0,<0.33.0",
+    "aiosqlite>=0.20.0,<0.21.0",
+    "httpx>=0.28.0,<0.29.0",
+    "python-multipart>=0.0.12,<0.0.20",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0,<8.4.0",
+    "pytest-asyncio>=0.24.0,<0.25.0",
+    "ruff>=0.8.0,<0.9.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+python_classes = ["Test*"]
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "C4",  # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+]
+ignore = [
+    "B008", # do not perform function calls in argument defaults (FastAPI Depends)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+

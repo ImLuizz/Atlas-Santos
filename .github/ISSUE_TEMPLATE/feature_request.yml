@@ -1,0 +1,65 @@
+name: "Demanda Funcional ou Técnica (Feature / Task)"
+description: "Proponha a implementação de um requisito funcional, tarefa técnica ou melhoria."
+title: "[FEAT] "
+labels: ["enhancement", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Utilize este template para especificar a implementação de um item do backlog do **Atlas Santos**. Lembre-se de vincular aos identificadores de requisitos (RF, RN, RNF).
+  - type: input
+    id: requirement-id
+    attributes:
+      label: "Identificador de Requisito (RF / RN / RNF)"
+      description: "Informe o código correspondente no documento de requisitos (ex: RF-01, RF-18, RNF-06)."
+      placeholder: "Ex: RF-12, RN-06"
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Prioridade do Projeto"
+      options:
+        - "Fundação (Fase 0)"
+        - "P1 (Fluxo essencial / MVP até 25/11/2026)"
+        - "P2 (Complementar / Exportação estendida até 27/11/2026)"
+        - "Melhoria Técnica / Refatoração"
+    validations:
+      required: true
+  - type: dropdown
+    id: target-module
+    attributes:
+      label: "Módulo / Domínio Afetado"
+      options:
+        - "identity"
+        - "organization"
+        - "contributions"
+        - "media"
+        - "curation"
+        - "routes"
+        - "ai"
+        - "publication"
+        - "exports"
+        - "administration"
+        - "cross-cutting / infra"
+    validations:
+      required: true
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: "Descrição da Necessidade"
+      description: "Explique o que precisa ser desenvolvido e qual o valor agregado."
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: "Critérios de Aceite"
+      description: "Liste as condições verificáveis para aprovação da entrega (baseadas no documento de requisitos)."
+      value: |
+        - [ ] Critério 1:
+        - [ ] Critério 2:
+        - [ ] Testes unitários/integração adicionados
+    validations:
+      required: true
+
