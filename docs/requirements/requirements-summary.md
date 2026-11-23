@@ -4,9 +4,9 @@ Fonte da revisão de 23/11/2026: *Especificação de requisitos — Atlas Santos
 
 ## Situação verificada em 23/11
 
-A revisão partiu do commit `1e4b512` da branch `main`. Naquele código, os únicos endpoints de aplicação registrados eram [as duas rotas de saúde](../../backend/app/api/v1/endpoints/health.py). A [migração inicial](../../backend/alembic/versions/2026_11_12_2155-45e99ca9977f_create_jobs_table.py) criava a tabela de tarefas. Havia uma página inicial, mas nenhum fluxo integrado de contas, acervo, curadoria, IA ou exportação. Um diretório de domínio, uma interface abstrata e um teste com respostas simuladas são evidências de estrutura. A homologação exige percorrer o fluxo com dados de teste e conferir o resultado.
+O repositório contém a tela inicial, [as duas rotas de saúde da API](../../backend/app/api/v1/endpoints/health.py) e a [fila persistida no banco](../../backend/alembic/versions/2026_11_12_2155-45e99ca9977f_create_jobs_table.py).
 
-A matriz funcional descreve **o que falta demonstrar de ponta a ponta**. A matriz de qualidade distingue os componentes já presentes das verificações operacionais pendentes. O [plano de trabalho](../../TODO.md) organiza as dependências.
+A matriz funcional descreve o que falta demonstrar de ponta a ponta. A matriz de qualidade registra a infraestrutura disponível e as verificações pendentes.
 
 ## Requisitos funcionais
 
@@ -70,8 +70,8 @@ A visão geral (§1.1, p. 4) também prevê galeria, exportação HTML e organiz
 | RNF013 | 14 | Servidor valida formato, tamanho e características do arquivo. Textos e imagens de participantes são dados, inclusive na entrada da IA. |
 | RNF014 | 14 | Mapas e exportações exibem os créditos exigidos e a integração respeita os termos de cada provedor. Conferir na saída efetiva. |
 | RNF015 | 14 | Railway com configurações próprias para desenvolvimento, homologação e produção. O guia de implantação precisa ser validado nesses ambientes. |
-| RNF016 | 14–15 | Há [OpenAPI para a API existente](../api/README.md). Documentar contratos, erros consistentes e mensagens seguras nos endpoints de negócio à medida que forem entregues. |
-| RNF017 | 15 | Testar backup e restauração conjunta do PostgreSQL e dos arquivos, preservando os vínculos e respeitando retiradas. O [roteiro](../operations/backup-and-retention.md) orienta o ensaio. |
+| RNF016 | 14–15 | A API expõe o esquema OpenAPI em `/openapi.json`. Documentar contratos, erros consistentes e mensagens seguras nos endpoints de negócio à medida que forem entregues. |
+| RNF017 | 15 | Testar backup e restauração conjunta do PostgreSQL e dos arquivos, preservando os vínculos e respeitando retiradas. |
 | RNF018 | 15 | Python/FastAPI presentes no [ponto de entrada da API](../../backend/app/main.py). |
 | RNF019 | 15 | React com JavaScript/JSX, Vite e Tailwind presentes no [frontend](../../frontend/package.json). |
 | RNF020 | 15 | PostgreSQL com SQLAlchemy e Alembic configurados. A tabela de tarefas é infraestrutura; as entidades de participantes, fotos e curadoria ainda precisam de persistência e testes próprios. |

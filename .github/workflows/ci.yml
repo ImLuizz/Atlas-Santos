@@ -7,6 +7,21 @@ on:
     branches: [main, develop]
 
 jobs:
+  startup:
+    name: Início rápido com Docker Compose
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose up --build --wait --wait-timeout 240
+      - name: Conferir página, API e fila
+        run: |
+          curl -fsS http://localhost:5173/ | grep -i 'Atlas Santos'
+          curl -fsS http://localhost:8000/api/v1/health | jq -e '.status == "healthy" and .database == "connected"'
+          docker compose exec -T worker python -m app.worker.main --single-pass
+      - if: failure()
+        run: docker compose logs
+
   backend-quality:
     name: Backend Lint, Format & Tests
     runs-on: ubuntu-latest
