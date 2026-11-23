@@ -1,14 +1,7 @@
-# Módulo: AI (Descrições Assistidas por Inteligência Artificial)
+# Descrições das fotos e conclusão da viagem
 
-## Responsabilidades
-- Análise multimodal da imagem (derivado sem EXIF) e reflexão aprovada associada para sugerir descrições curtas da fotografia (RF-21, RF-22).
-- Geração de alternativas curtas e editáveis (proposta: até 3 alternativas com até 600 caracteres cada, RF-22, D-06).
-- Rastreamento das fontes, modelo utilizado, prompt/instruções e consumo de tokens para controle de custos (RF-22, RNF-08).
-- Sinalização de divergências entre imagem e texto sem harmonização fictícia.
+Para cada foto autorizada, o backend envia ao provedor a imagem de exibição sem EXIF e, quando disponível e permitida, sua reflexão aprovada. A imagem sozinha basta na ausência de reflexão aprovada. O participante ou capitão pode escolher, editar ou descartar as sugestões identificadas como geradas por IA. A descrição escolhida segue para revisão do capitão junto com o registro (RF023 a RF025). As sugestões devem respeitar os elementos reconhecíveis na imagem.
 
-## Invariantes e Segurança
-- O modelo de IA é tratado como fornecedor não confiável; suas saídas jamais aprovam ou publicam conteúdo automaticamente (RN-14).
-- O envio ao provedor restringe-se a imagens sem metadados EXIF/GPS e reflexões com autorização de compartilhamento (RNF-02, D-04).
-- Proteção contra prompt injection em textos de participantes ou metadados de imagens (RNF-07).
-- A ausência ou falha da IA mantém integralmente a edição e descrição manual disponível (RF-22, RNF-06).
+Para a conclusão da viagem, o sistema reúne as reflexões aprovadas das equipes e solicita uma síntese em diálogo com *Sonho Manifesto*, de Sidarta Ribeiro. Se as reflexões forem insuficientes, a aplicação não pode apresentar um texto como representativo do grupo. A administração revisa, pode editar e aprova o texto antes de disponibilizá-lo em página própria a participantes e capitães (RF029 a RF032).
 
+Ambos os usos de IA ocorrem no backend (RNF025). Envio mínimo de dados, controle de acesso, invalidação quando as fontes mudam e tratamento das imagens e textos como dados se aplicam às duas operações (RNF007, RNF008, RNF011 e RNF013).

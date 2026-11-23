@@ -6,7 +6,7 @@ cd "$(dirname "$0")/../frontend"
 echo "==> Starting Atlas Santos Frontend (Vite)..."
 if [ ! -d "node_modules" ]; then
     echo "Installing frontend dependencies..."
-    npm install
+    npm ci
 fi
 
 npm run dev

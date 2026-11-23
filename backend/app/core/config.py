@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,9 +20,9 @@ class Settings(BaseSettings):
     PORT: int = Field(default=8000)
 
     # Security
-    SECRET_KEY: str = Field(default="development-insecure-secret-key-32-chars-min!!")
+    SECRET_KEY: SecretStr | None = None
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=1440)
-    COOKIE_SECURE: bool = Field(default=False)
+    COOKIE_SECURE: bool = Field(default=True)
     COOKIE_SAMESITE: str = Field(default="lax")
 
     # Database
@@ -40,10 +40,10 @@ class Settings(BaseSettings):
 
     # Storage (Railway Buckets / S3)
     STORAGE_BUCKET_NAME: str = Field(default="atlas-santos-media-dev")
-    STORAGE_ENDPOINT_URL: str = Field(default="https://s3.us-east-1.amazonaws.com")
-    STORAGE_ACCESS_KEY_ID: str = Field(default="mock-key")
-    STORAGE_SECRET_ACCESS_KEY: str = Field(default="mock-secret")
-    STORAGE_REGION: str = Field(default="us-east-1")
+    STORAGE_ENDPOINT_URL: str | None = None
+    STORAGE_ACCESS_KEY_ID: SecretStr | None = None
+    STORAGE_SECRET_ACCESS_KEY: SecretStr | None = None
+    STORAGE_REGION: str | None = None
 
     # Operational Parameters (Configurable proposals)
     DEFAULT_PHOTO_QUOTA: int = Field(default=20)
@@ -51,8 +51,17 @@ class Settings(BaseSettings):
     RESERVATION_TTL_MINUTES: int = Field(default=30)
     PRESIGNED_UPLOAD_TTL_MINUTES: int = Field(default=10)
     PRESIGNED_DOWNLOAD_TTL_MINUTES: int = Field(default=5)
-    MAX_DESCRIPTION_CHARS: int = Field(default=600)
-    MAX_REFLECTION_CHARS: int = Field(default=1200)
+    JOB_TIMEOUT_SECONDS: int = Field(default=300, gt=0)
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def normalize_database_driver(cls, value: str) -> str:
+        scheme, separator, address = value.partition("://")
+        if scheme in {"postgres", "postgresql"} and separator:
+            return f"postgresql+psycopg://{address}"
+        if scheme == "sqlite" and separator:
+            return f"sqlite+aiosqlite://{address}"
+        return value
 
 
 settings = Settings()

@@ -19,6 +19,7 @@ class PedestrianRoutingAdapter(ABC):
     ) -> RouteReconstructionResult:
         """
         Calculates probable pedestrian street route between consecutive GPS points.
-        Waypoints are provided as (latitude, longitude) tuples.
+        Authorized waypoints are in capture order. Output GeoJSON must use
+        (longitude, latitude); input tuples here use (latitude, longitude).
         """
         pass

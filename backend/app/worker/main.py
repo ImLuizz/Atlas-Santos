@@ -28,18 +28,17 @@ async def run_worker(poll_interval: float = 2.0, single_pass: bool = False) -> N
     while running:
         try:
             processed = await dispatcher.fetch_and_process_next()
+            if single_pass:
+                break
             if not processed:
-                if single_pass:
-                    logger.info("Single-pass completed with no pending jobs. Exiting.")
-                    break
                 await asyncio.sleep(poll_interval)
         except asyncio.CancelledError:
             logger.info("Worker task cancelled.")
             break
         except Exception as exc:
-            logger.error(f"Error in worker processing loop: {exc}")
+            logger.error("Worker polling failed (%s)", type(exc).__name__)
             if single_pass:
-                break
+                raise SystemExit(1) from None
             await asyncio.sleep(poll_interval)
 
     logger.info("Atlas Santos Worker stopped gracefully.")

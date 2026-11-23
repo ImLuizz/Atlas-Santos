@@ -1,49 +1,28 @@
-# Especificação e Contratos da API — Atlas Santos
+# Contratos HTTP do Atlas Santos
 
-A API do Atlas Santos é construída com **FastAPI** e utiliza **Pydantic v2** para validação estrita de esquemas e contratos de dados (RNF-12, RNF-13).
+## Rotas implementadas
 
----
+| Método e caminho | O que verifica |
+| --- | --- |
+| `GET /health` | Estado da API e conectividade com o banco configurado. |
+| `GET /api/v1/health` | O mesmo diagnóstico, sob o prefixo versionado. |
 
-## 1. Documentação Interativa e Esquema OpenAPI
+Com o banco conectado, a sonda responde HTTP 200 com `status: healthy` e `database: connected`. Se a consulta falhar, responde HTTP 503 com `status: degraded` e `database: disconnected`. Em ambos os casos o JSON inclui `app_name`, `version`, `environment` e `timestamp` em UTC. Para verificar um fluxo como upload ou curadoria é preciso exercitar o respectivo contrato de negócio.
 
-Em ambiente de desenvolvimento e homologação (`DEBUG=true`), a documentação interativa pode ser consultada diretamente em:
+Com `DEBUG=true`, o aplicativo disponibiliza `/docs`, `/redoc` e `/openapi.json`. O roteador registrado no código e o esquema gerado identificam os contratos executáveis. [Registro de rotas](../../backend/app/api/v1/router.py) · [Sondas de saúde](../../backend/app/api/v1/endpoints/health.py) · [Configuração da API](../../backend/app/main.py)
 
-- **Swagger UI**: `http://localhost:8000/docs`
-- **ReDoc**: `http://localhost:8000/redoc`
-- **Esquema OpenAPI JSON**: `http://localhost:8000/openapi.json`
+## Contratos a desenvolver
 
----
+Os requisitos definem comportamentos, sem prescrever URLs para cada operação. O prefixo previsto para novas rotas é `/api/v1`. O navegador deverá consumir esses contratos à medida que a equipe os implementar, documentar e testar.
 
-## 2. Padrão de Versionamento de Rotas
+| Área | Comportamento a expor |
+| --- | --- |
+| Acesso | Vínculos e capitães, provisionamento automático por e-mail, login, logout e redefinição de senha (RF001–RF004). |
+| Mapa e galeria | Consultas autorizadas por dia e equipe ou todas as equipes, marcadores com detalhes, percursos estimados e alternativa em lista (RF005–RF009, RF013, RF026–RF028, RNF010). |
+| Fotos e curadoria | Enviar uma foto por formulário, preencher ou corrigir metadados, editar ou excluir a própria contribuição, revisar o registro completo e justificar a não aprovação (RF010–RF020). |
+| Olhares sobre Santos | Registrar reflexões opcionais por fotografia e permitir à administração manter temas e perguntas (RF021–RF022). |
+| IA | Sugerir descrições, receber a escolha ou edição do usuário e revisão do capitão. Gerar a síntese das reflexões aprovadas, receber revisão administrativa e fornecer a conclusão aprovada (RF023–RF025, RF029–RF032). |
+| Exportações | Identificar o recorte permitido, disponibilizar PDF, PNG e GeoJSON com as restrições de conteúdo e precisão vigentes. A visão geral também inclui HTML e seus detalhes estão em aberto (RF033–RF036, seção 1.1). |
 
-Todas as rotas de domínio de negócio são versionadas sob o prefixo `/api/v1`:
-
-- `/api/v1/health`: Verificação de prontidão e conectividade de banco.
-- `/api/v1/auth/*`: Sessões e convites (módulo `identity`).
-- `/api/v1/organizations/*`: Equipes, atlas e cotas (módulo `organization`).
-- `/api/v1/contributions/*`: Fotografias e submissões (módulo `contributions`).
-- `/api/v1/media/*`: Tickets de upload pré-assinados e finalizações (módulo `media`).
-- `/api/v1/curation/*`: Fila de trabalho e revisões do capitão (módulo `curation`).
-- `/api/v1/routes/*`: Reconstrução e aprovação de percursos (módulo `routes`).
-- `/api/v1/ai/*`: Propostas de descrição assistida (módulo `ai`).
-- `/api/v1/publication/*`: Filtros e consultas públicas autorizadas (módulo `publication`).
-- `/api/v1/exports/*`: Solicitações assíncronas de PDF/PNG/HTML/GeoJSON (módulo `exports`).
-- `/api/v1/administration/*`: Importação do IF-Arbitra e conciliação (módulo `administration`).
-
----
-
-## 3. Formato Padronizado de Respostas de Erro (RNF-12)
-
-Todas as respostas de erro HTTP seguem uma estrutura previsível contendo código de erro e correlation ID:
-
-```json
-{
-  "detail": "Mensagem compreensível da falha",
-  "error_code": "RESOURCE_NOT_FOUND",
-  "correlation_id": "c1f7a28e-89a5-4841-9452-47cbb650f924",
-  "timestamp": "2026-11-12T21:00:00Z"
-}
-```
-
-Nenhum *stack trace* interno do servidor ou segredo é exposto nas respostas da API.
+O contrato de cada nova operação deverá indicar formato de entrada, resultado, permissões e falhas esperadas. RNF016 requer erros consistentes e compreensíveis, sem mensagens internas ou rastros de execução. Status editoriais, decisões do capitão ou arquivos só podem ser revelados ao solicitante autorizado (RNF005–RNF008).
 

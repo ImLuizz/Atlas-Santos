@@ -24,7 +24,7 @@ class JobStatus(str, enum.Enum):
 class JobRecord(Base):
     """
     Persistent asynchronous jobs table (Transactional Outbox).
-    Persisted in PostgreSQL to guarantee resilience across worker restarts (RNF-06).
+    Persisted in PostgreSQL for worker recovery (RNF012).
     """
 
     __tablename__ = "jobs"

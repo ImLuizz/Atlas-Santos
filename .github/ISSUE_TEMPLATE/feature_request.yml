@@ -6,23 +6,23 @@ body:
   - type: markdown
     attributes:
       value: |
-        Utilize este template para especificar a implementação de um item do backlog do **Atlas Santos**. Lembre-se de vincular aos identificadores de requisitos (RF, RN, RNF).
+        Utilize este template para especificar a implementação de um item do backlog do **Atlas Santos**. Lembre-se de vincular aos identificadores de requisitos (RF e RNF, quando aplicáveis).
   - type: input
     id: requirement-id
     attributes:
-      label: "Identificador de Requisito (RF / RN / RNF)"
-      description: "Informe o código correspondente no documento de requisitos (ex: RF-01, RF-18, RNF-06)."
-      placeholder: "Ex: RF-12, RN-06"
+      label: "Identificador de Requisito (RF / RNF)"
+      description: "Informe o código correspondente no documento de requisitos (por exemplo, RF001, RF018, RNF006)."
+      placeholder: "Ex.: RF012, RNF006"
     validations:
-      required: true
+      required: false
   - type: dropdown
     id: priority
     attributes:
       label: "Prioridade do Projeto"
       options:
-        - "Fundação (Fase 0)"
-        - "P1 (Fluxo essencial / MVP até 25/11/2026)"
-        - "P2 (Complementar / Exportação estendida até 27/11/2026)"
+        - "Fundação técnica"
+        - "Fluxo essencial"
+        - "Entrega complementar"
         - "Melhoria Técnica / Refatoração"
     validations:
       required: true
@@ -31,6 +31,7 @@ body:
     attributes:
       label: "Módulo / Domínio Afetado"
       options:
+        - "frontend"
         - "identity"
         - "organization"
         - "contributions"

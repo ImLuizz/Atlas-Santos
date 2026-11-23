@@ -1,14 +1,5 @@
-# Módulo: Media (Armazenamento, Uploads e Processamento de Mídia)
+# Mídia
 
-## Responsabilidades
-- Emissão de URLs temporárias pré-assinadas para upload direto ao Railway Buckets / S3 (RF-08, RN-03).
-- Reserva e liberação de cotas com expiração (RN-04, proposta: 30 minutos).
-- Finalização de upload: verificação de integridade (tamanho, checksum SHA-256) e criação de tarefa assíncrona para o Worker.
-- Processamento assíncrono de imagem via Worker: rotação EXIF, geração de miniatura (até 480px), versão de exibição (até 2048px), e expurgo de metadados EXIF/GPS dos arquivos derivados públicos (RF-10, RNF-02).
-- Reconciliação periódica entre banco e bucket para expurgar arquivos órfãos (RNF-16).
+O formulário envia uma foto de cada vez ao armazenamento privado. A extração de EXIF auxilia o preenchimento de data, horário e localização antes de o participante confirmar ou corrigir os dados (RF010 a RF012).
 
-## Invariantes
-- Nenhum arquivo é gravado permanentemente no filesystem local da aplicação.
-- A chave final da mídia no bucket não pode ser sobrescrita por reuso de URL temporária (RF-09, RNF-07).
-- Arquivos derivados divulgáveis jamais contêm metadados sensíveis ou GPS no cabeçalho EXIF (RNF-02).
-
+O backend deve validar o formato, tamanho e características da imagem. Os originais e a localização precisa têm acesso restrito. Os derivados de exibição precisam perder o EXIF, inclusive as coordenadas nele contidas (RNF007 e RNF013). Fotografias e arquivos gerados usam Railway Buckets por meio de uma integração compatível com S3 (RNF021).

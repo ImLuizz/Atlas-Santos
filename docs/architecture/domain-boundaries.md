@@ -1,166 +1,23 @@
-# Fronteiras de Domínio e Modelo Conceitual — Atlas Santos
+# Responsabilidades dos módulos
 
-Este documento detalha o modelo conceitual e o encapsulamento de responsabilidades entre os dez domínios de negócio do **Atlas Santos**.
+A tabela relaciona os diretórios existentes de `backend/app/modules` aos comportamentos previstos. Estes módulos ainda não oferecem contratos de negócio executáveis. A divisão de pastas é uma escolha de organização do código. Os requisitos descrevem o comportamento observável pela equipe e pelos participantes.
 
----
+| Módulo | Responsabilidade prevista | Referências |
+| --- | --- | --- |
+| `identity` | Provisionar acesso por e-mail, autenticar, redefinir senha e invalidar a sessão no logout ou na revogação. | RF002–RF004, RNF006 |
+| `organization` | Associar cada equipe ao seu atlas, identificar participantes e capitão e manter as cotas de envio por participante. | RF001, RF010, seção 1.2 |
+| `contributions` | Registrar uma foto por formulário, data e localização confirmadas pelo autor, tema e reflexão opcionais. Permitir edição com a imagem existente, exclusão pelo autor e consulta à galeria. | RF010–RF015, RF021 |
+| `media` | Controlar o envio ao armazenamento privado, validar a imagem e extrair EXIF para o formulário. Produzir versões de exibição sem EXIF. | RF010–RF012, RNF007, RNF013, RNF021 |
+| `curation` | Revisar registros completos, justificar ajustes ou rejeição, liberar registros aprovados e receber os corrigidos. Tratar o envio do capitão da própria equipe conforme RF018. | RF014, RF016–RF020, RF025 |
+| `routes` | Reconstruir percursos automaticamente por equipe e dia e fornecer trajetos estimados e marcadores permitidos para as vistas geral e detalhada. | RF005–RF009, RF026–RF028, RNF023–RNF024 |
+| `ai` | Gerar sugestões de descrição das imagens e propostas de conclusão da viagem. Usar reflexões aprovadas nos dois casos, quando aplicáveis, e manter a versão das fontes para invalidar os resultados afetados. | RF023–RF025, RF029–RF032, RNF008, RNF011, RNF025 |
+| `publication` | Aplicar aprovação, autorização e retiradas à exibição. Atualizar a galeria, o mapa e os conteúdos dependentes após edições ou exclusões. Disponibilizar apenas a conclusão aprovada pela administração. | RF009, RF013–RF015, RF018, RF032, RNF005–RNF008, RNF011 |
+| `exports` | Gerar PDF, PNG e GeoJSON autorizados, com os filtros, a precisão e os créditos apropriados. O HTML consta da visão geral do produto. | Seção 1.1, RF033–RF036, RNF008, RNF014 |
+| `administration` | Conciliar o cadastro do IF-Arbitra, administrar cotas, temas e perguntas, atender retiradas e revisar a conclusão antes da publicação. | Seção 1.2, RF001, RF015, RF022, RF031 |
 
-## 1. Entidades Principais e Localização de Domínio
+## Relações entre os dados
 
-Para evitar modelo anêmico ou cruzamento indiscriminado de dados, cada entidade é de propriedade exclusiva de um domínio:
+Uma equipe possui um atlas. Cada registro pertence ao seu autor e atlas. A data usada pelo mapa e pela galeria corresponde ao dia da atividade. A ausência de coordenadas impede a exibição daquele marcador e permite a consulta do registro aprovado na galeria. Um percurso referencia os registros válidos daquela equipe e daquele dia. A conclusão da viagem reúne reflexões de diferentes registros, inclusive contribuições dos capitães.
 
-```mermaid
-classDiagram
-    direction LR
-
-    class Participant {
-        +UUID id
-        +String external_uuid
-        +String full_name
-        +ParticipantType type (student, staff)
-    }
-
-    class Atlas {
-        +UUID id
-        +String team_id
-        +String name
-        +AudiencePolicy audience
-    }
-
-    class Membership {
-        +UUID id
-        +UUID participant_id
-        +UUID atlas_id
-        +Role role (member, captain, admin)
-        +Int photo_quota
-        +Int reserved_count
-        +Int consumed_count
-    }
-
-    class PhotoRecord {
-        +UUID id
-        +UUID atlas_id
-        +UUID author_membership_id
-        +Date activity_date (05-11/10/2026)
-        +DateTime captured_at_corrected
-        +Point coordinates
-        +Boolean has_gps
-    }
-
-    class MediaAsset {
-        +UUID id
-        +UUID photo_record_id
-        +String raw_s3_key
-        +String display_s3_key
-        +String thumb_s3_key
-        +ProcessingStatus status
-    }
-
-    class EditorialReview {
-        +UUID id
-        +UUID target_id
-        +ReviewTargetType target_type (media, text, route)
-        +Int revision_number
-        +ReviewStatus status
-        +String justification
-        +UUID reviewer_membership_id
-        +DateTime reviewed_at
-    }
-
-    class RoutePlan {
-        +UUID id
-        +UUID atlas_id
-        +Date activity_date
-        +GeoJSON route_geometry
-        +RouteStatus status
-    }
-
-    class JobRecord {
-        +UUID id
-        +String job_type
-        +JobStatus status
-        +JSON payload
-        +JSON result
-    }
-
-    Participant "1" -- "0..*" Membership
-    Atlas "1" -- "0..*" Membership
-    Membership "1" -- "0..*" PhotoRecord
-    PhotoRecord "1" -- "1..*" MediaAsset
-    PhotoRecord "1" -- "0..*" EditorialReview
-    Atlas "1" -- "0..*" RoutePlan
-```
-
----
-
-## 2. Dicionário de Domínios e Serviços Públicos
-
-### 2.1 `identity`
-- **Entidades proprietárias**: `UserAccount`, `SessionRecord`, `InvitationToken`.
-- **Interface pública**:
-  - `authenticate_session(cookie: str) -> Optional[AuthenticatedUser]`
-  - `create_invitation(participant_id: UUID) -> str`
-  - `revoke_session(session_id: str) -> None`
-
-### 2.2 `organization`
-- **Entidades proprietárias**: `Team`, `Atlas`, `Membership`.
-- **Interface pública**:
-  - `reserve_quota(membership_id: UUID) -> bool` (atômico no PostgreSQL)
-  - `release_quota_reservation(membership_id: UUID) -> None`
-  - `finalize_quota_consumption(membership_id: UUID) -> None`
-  - `get_user_memberships(participant_id: UUID) -> List[Membership]`
-
-### 2.3 `contributions`
-- **Entidades proprietárias**: `PhotoRecord`, `ReflectionEntry`, `ActivityDay`.
-- **Interface pública**:
-  - `create_draft_record(membership_id: UUID, date: date) -> PhotoRecord`
-  - `update_capture_metadata(photo_id: UUID, captured_at: datetime, coords: Optional[Point]) -> None`
-  - `submit_reflection(photo_id: UUID, text: str, theme_id: Optional[str]) -> None`
-
-### 2.4 `media`
-- **Entidades proprietárias**: `MediaAsset`, `UploadReservation`.
-- **Interface pública**:
-  - `initiate_upload(membership_id: UUID, filename: str, mime_type: str) -> UploadTicket`
-  - `confirm_upload(reservation_id: UUID) -> JobRecord`
-  - `get_display_url(media_id: UUID) -> str` (URL pré-assinada de leitura privada)
-
-### 2.5 `curation`
-- **Entidades proprietárias**: `EditorialReview`, `ReviewAuditLog`.
-- **Interface pública**:
-  - `get_captain_review_queue(atlas_id: UUID) -> List[PendingReviewItem]`
-  - `submit_media_review(review_id: UUID, decision: Decision, reason: Optional[str]) -> None`
-  - `submit_text_review(review_id: UUID, decision: Decision, reason: Optional[str]) -> None`
-
-### 2.6 `routes`
-- **Entidades proprietárias**: `RoutePlan`, `RouteWaypoint`, `RouteSegment`.
-- **Interface pública**:
-  - `request_route_reconstruction(atlas_id: UUID, day: date) -> JobRecord`
-  - `adjust_route_segments(route_id: UUID, segments: List[SegmentEdit]) -> None`
-  - `approve_route(route_id: UUID, captain_id: UUID) -> None`
-
-### 2.7 `ai`
-- **Entidades proprietárias**: `AIDescriptionProposal`, `AICostLog`.
-- **Interface pública**:
-  - `enqueue_description_analysis(photo_id: UUID) -> JobRecord`
-  - `get_proposals_for_photo(photo_id: UUID) -> List[AIDescriptionProposal]`
-  - `record_token_usage(model: str, prompt_tokens: int, completion_tokens: int) -> None`
-
-### 2.8 `publication`
-- **Entidades proprietárias**: `AudienceRule`, `ContentTakedown`.
-- **Interface pública**:
-  - `is_record_eligible_for_viewer(photo_id: UUID, viewer: Optional[User]) -> bool`
-  - `request_takedown(target_id: UUID, reason: str, actor_id: UUID) -> None`
-  - `invalidate_dependent_artifacts(photo_id: UUID) -> None`
-
-### 2.9 `exports`
-- **Entidades proprietárias**: `ExportTask`, `ExportArtifact`.
-- **Interface pública**:
-  - `request_export(atlas_id: UUID, day: Optional[date], format: ExportFormat) -> JobRecord`
-  - `get_export_download(export_id: UUID, user: User) -> str`
-
-### 2.10 `administration`
-- **Entidades proprietárias**: `BatchImportRecord`, `ReconciliationIssue`, `SystemAuditTrail`.
-- **Interface pública**:
-  - `preview_if_arbitra_import(payload: dict) -> ImportPreviewResult`
-  - `commit_if_arbitra_import(batch_id: UUID) -> ImportSummary`
-  - `query_audit_logs(filter_params: AuditFilter) -> List[AuditEntry]`
+As alterações de autoria, publicação e visibilidade exigem autorização no servidor. As tarefas de edição e exclusão previstas para participantes alcançam os próprios registros. Os filtros “todas as equipes” disponibilizam somente os conteúdos autorizados ao leitor. Atribuir um registro a um atlas tampouco torna pública a localização exata de seu original. [Fluxo editorial](state-machine.md)
 

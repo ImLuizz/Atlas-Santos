@@ -10,9 +10,9 @@ body:
   - type: input
     id: affected-rf-rn
     attributes:
-      label: "Requisito ou Regra Afetada (RF / RN / RNF)"
-      description: "Informe o identificador do requisito no documento de requisitos (ex: RF-08, RN-03, RNF-01)."
-      placeholder: "Ex: RF-09, RN-05"
+      label: "Requisito ou Regra Afetada (RF / RNF)"
+      description: "Informe o identificador do requisito no documento de requisitos (por exemplo, RF008, RNF005)."
+      placeholder: "Ex.: RF009, RNF005"
     validations:
       required: false
   - type: textarea

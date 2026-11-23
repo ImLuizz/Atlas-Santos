@@ -1,6 +1,1 @@
-blank_issues_enabled: false
-contact_links:
-  - name: "Dúvidas Arquiteturais e de Governança"
-    url: "https://github.com/Atlas-Santos/atlas-santos/discussions"
-    about: "Para debater decisões pendentes (D-01 a D-10) ou alinhamentos de escopo da equipe."
-
+blank_issues_enabled: true

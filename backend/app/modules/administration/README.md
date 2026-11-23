@@ -1,13 +1,5 @@
-# Módulo: Administration (Administração, Importação e Auditoria)
+# Administração
 
-## Responsabilidades
-- Importação pontual em JSON de dados de participantes e equipes do IF-Arbitra (RF-04, RF-05).
-- Prévia de importação e conciliação dos 95 participantes (83 estudantes + 12 servidores) (RF-06).
-- Idempotência na confirmação de lotes administrativos sem sobrescrever autoria ou fotos (RF-05, RNF-14).
-- Consulta unificada de auditoria: log de ações críticas (aprovações, alterações de cota, lotes confirmados e exclusões) (RF-29).
+A administração concilia os dados do IF-Arbitra para manter o cadastro dos 95 participantes, das equipes já formadas, dos vínculos com o atlas e dos capitães (seção 1.2 e RF001). O Atlas provisiona suas próprias credenciais por e-mail (RF002).
 
-## Invariantes
-- A integração com IF-Arbitra é pontual via arquivo administrativo JSON; o Atlas não consulta o IF-Arbitra em runtime (RF-05).
-- IDs internos do Atlas são preservados em reimportações (RF-05).
-- Relatórios de conciliação devem demonstrar explicitamente os 83 estudantes e 12 servidores sem descartar participantes não alocados na origem (RF-06, RN-02).
-
+Também cabem à administração as regras de cotas, a auditoria de ações e a retirada de registros por privacidade, o cadastro e a edição dos temas e perguntas de *Olhares sobre Santos*, além da revisão e aprovação da conclusão coletiva da viagem (seção 1.2, RF015, RF022 e RF031).

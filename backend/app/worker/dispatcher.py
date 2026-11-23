@@ -1,103 +1,108 @@
+import asyncio
 import logging
 from collections.abc import Callable, Coroutine
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from app.core.config import settings
 from app.db.base import JobRecord, JobStatus
 from app.db.session import async_session_factory
-from sqlalchemy import select, update
+from sqlalchemy import and_, or_, select, update
 
 logger = logging.getLogger(__name__)
 
-# Type alias for async job handler functions
 JobHandler = Callable[[JobRecord], Coroutine[Any, Any, dict[str, Any] | None]]
 
 
 class JobDispatcher:
-    """
-    Coordinates asynchronous task execution from the persistent jobs table.
-    Enforces transactional consistency and isolation (RNF-06).
-    """
+    """Claim bounded attempts from the persistent jobs table (RNF003 and RNF012)."""
 
     def __init__(self) -> None:
         self._handlers: dict[str, JobHandler] = {}
 
     def register_handler(self, job_type: str, handler: JobHandler) -> None:
-        """Register a processing routine for a given job type."""
+        """Handlers must make external side effects idempotent by job ID."""
         self._handlers[job_type] = handler
-        logger.info(f"Registered worker handler for job type: '{job_type}'")
 
     async def fetch_and_process_next(self) -> bool:
-        """
-        Polls the database for the next queued job, executes it, and updates its state.
-        Returns True if a job was found and processed, False otherwise.
-        """
-        async with async_session_factory() as session:
-            # Atomic fetch-and-lock of highest-priority queued job
+        now = datetime.now(UTC)
+        # Give the attempt time to cancel and record its outcome before recovery.
+        stale_before = now - timedelta(seconds=2 * settings.JOB_TIMEOUT_SECONDS)
+        async with async_session_factory.begin() as session:
             query = (
                 select(JobRecord)
-                .where(JobRecord.status == JobStatus.QUEUED)
-                .order_by(JobRecord.priority.desc(), JobRecord.created_at.asc())
+                .where(
+                    or_(
+                        JobRecord.status == JobStatus.QUEUED,
+                        and_(
+                            JobRecord.status == JobStatus.PROCESSING,
+                            or_(
+                                JobRecord.started_at.is_(None),
+                                JobRecord.started_at <= stale_before,
+                            ),
+                        ),
+                    )
+                )
+                .order_by(JobRecord.priority.desc(), JobRecord.created_at, JobRecord.id)
                 .limit(1)
                 .with_for_update(skip_locked=True)
             )
-            result = await session.execute(query)
-            job = result.scalar_one_or_none()
-
-            if not job:
+            job = (await session.execute(query)).scalar_one_or_none()
+            if job is None:
                 return False
-
-            # Mark as processing
+            if job.status == JobStatus.PROCESSING:
+                job.retry_count += 1
+                job.error_message = "Previous attempt interrupted"
+                if job.retry_count >= job.max_retries:
+                    job.status = JobStatus.FAILED
+                    return True
             job.status = JobStatus.PROCESSING
-            job.started_at = datetime.now(UTC)
-            await session.commit()
-            job_id = job.id
-            job_type = job.job_type
+            job.started_at = now
 
-        # Dispatch job outside the initial lock transaction
-        handler = self._handlers.get(job_type)
-        if not handler:
-            logger.error(f"No handler registered for job {job_id} of type '{job_type}'")
-            await self._mark_failed(job_id, f"No handler registered for '{job_type}'")
+        handler = self._handlers.get(job.job_type)
+        if handler is None:
+            await self._finish(
+                job, status=JobStatus.FAILED, error_message="No handler registered"
+            )
             return True
 
         try:
-            logger.info(f"Executing job {job_id} [{job_type}]")
-            output = await handler(job)
-            await self._mark_completed(job_id, output)
-            return True
+            async with asyncio.timeout(settings.JOB_TIMEOUT_SECONDS):
+                result = await handler(job)
         except Exception as exc:
-            logger.exception(f"Job {job_id} failed with error: {exc}")
-            await self._mark_failed(job_id, str(exc))
-            return True
+            # Provider exceptions may contain requests, credentials or private URLs.
+            logger.warning("Job %s failed (%s)", job.id, type(exc).__name__)
+            failures = job.retry_count + 1
+            await self._finish(
+                job,
+                status=JobStatus.QUEUED
+                if failures < job.max_retries
+                else JobStatus.FAILED,
+                error_message="Processing failed",
+                retry_count=failures,
+            )
+        else:
+            await self._finish(
+                job,
+                status=JobStatus.COMPLETED,
+                error_message=None,
+                result=result or {},
+                completed_at=datetime.now(UTC),
+            )
+        return True
 
-    async def _mark_completed(self, job_id: str, result: dict[str, Any] | None) -> None:
-        async with async_session_factory() as session:
+    async def _finish(self, job: JobRecord, **values: Any) -> None:
+        # Only the attempt that currently owns the row may publish a result.
+        async with async_session_factory.begin() as session:
             await session.execute(
                 update(JobRecord)
-                .where(JobRecord.id == job_id)
-                .values(
-                    status=JobStatus.COMPLETED,
-                    result=result or {},
-                    completed_at=datetime.now(UTC),
+                .where(
+                    JobRecord.id == job.id,
+                    JobRecord.status == JobStatus.PROCESSING,
+                    JobRecord.started_at == job.started_at,
                 )
+                .values(**values)
             )
-            await session.commit()
-
-    async def _mark_failed(self, job_id: str, error_message: str) -> None:
-        async with async_session_factory() as session:
-            # Check retry count
-            stmt = select(JobRecord).where(JobRecord.id == job_id)
-            res = await session.execute(stmt)
-            job = res.scalar_one_or_none()
-            if job:
-                job.retry_count += 1
-                if job.retry_count < job.max_retries:
-                    job.status = JobStatus.QUEUED  # Retry
-                else:
-                    job.status = JobStatus.FAILED
-                job.error_message = error_message
-                await session.commit()
 
 
 dispatcher = JobDispatcher()

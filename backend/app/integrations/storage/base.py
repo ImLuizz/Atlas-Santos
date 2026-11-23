@@ -6,7 +6,10 @@ class ObjectStorageAdapter(ABC):
 
     @abstractmethod
     async def generate_presigned_upload_url(
-        self, object_key: str, expires_in_seconds: int = 600, max_size_bytes: int = 15 * 1024 * 1024
+        self,
+        object_key: str,
+        expires_in_seconds: int = 600,
+        max_size_bytes: int = 15 * 1024 * 1024,
     ) -> str:
         """Emits a short-lived presigned URL allowing direct client-to-bucket upload."""
         pass
@@ -27,4 +30,3 @@ class ObjectStorageAdapter(ABC):
     async def delete_object(self, object_key: str) -> bool:
         """Deletes an object permanently from storage."""
         pass
-

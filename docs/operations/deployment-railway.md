@@ -1,79 +1,26 @@
-# Guia de Implantação e Operação no Railway — Atlas Santos
+# Implantação no Railway
 
-Este documento descreve a topologia de implantação, segregação de ambientes e configurações da infraestrutura do **Atlas Santos** na plataforma **Railway**.
+A especificação exige configurações próprias para desenvolvimento, homologação e produção no Railway (RNF015, RNF022), HTTPS em produção (RNF004), PostgreSQL (RNF020) e Railway Buckets (RNF021). Este guia descreve a implantação prevista. O workflow do repositório executa verificações de código. A publicação e o provisionamento dos ambientes dependem de configuração no Railway. [Workflow de CI](../../.github/workflows/ci.yml)
 
----
+## Componentes
 
-## 1. Topologia de Serviços
+| Componente | Como preparar |
+| --- | --- |
+| API | Diretório `backend`. Instalar com `pip install .`. Aplicar as migrações com `alembic upgrade head` antes de utilizar o esquema. Iniciar `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. |
+| Worker | Usar o mesmo pacote e banco da API. Iniciar `python -m app.worker.main`. Verificar cada tipo de trabalho efetivamente implementado antes de usá-lo com dados reais. |
+| Frontend | Diretório `frontend`. Executar `npm ci` e `npm run build`. Publicar o conteúdo de `dist/` em um servidor de arquivos estáticos com suporte à navegação da aplicação. |
+| PostgreSQL | Configurar a conexão do ambiente para a API, a migração e o worker, usando o driver declarado em [pyproject.toml](../../backend/pyproject.toml). |
+| Railway Buckets | Reservar armazenamento privado do ambiente para originais, derivados e arquivos exportados. Configurar os acessos de homologação antes de usar a integração. |
 
-Para atender à arquitetura de **Monólito Modular com Worker Independente** (ADR-0001) e segregação de persistência, a infraestrutura é composta por 5 recursos no Railway:
+## Configuração do ambiente
 
-```text
-[Railway Project: Atlas Santos]
-├── 1. Service: atlas-santos-frontend (Node / Static Web Server)
-├── 2. Service: atlas-santos-api (Python / FastAPI / Uvicorn)
-├── 3. Service: atlas-santos-worker (Python Background Worker)
-├── 4. Plugin: Railway PostgreSQL (Instância Postgres 16+)
-└── 5. Plugin: Railway Storage Bucket (Armazenamento S3-compatível)
-```
+Os exemplos versionados descrevem os nomes das variáveis locais. Os valores de desenvolvimento devem ser substituídos pelos específicos de cada ambiente. [Backend](../../backend/.env.example) · [Frontend](../../frontend/.env.example)
 
----
+- A API e o worker precisam das configurações apropriadas para o banco. As chaves privadas de armazenamento, e-mail, roteamento e IA devem permanecer no backend quando essas integrações forem habilitadas. Configurar origens CORS permitidas e cookies de sessão compatíveis com HTTPS.
+- O frontend recebe a URL pública da API e a configuração pública do Mapbox. As variáveis `VITE_*` ficam disponíveis no navegador. O frontend deve enviar e receber apenas dados autorizados, inclusive ao mostrar várias equipes.
+- Em homologação, conferir que o mapa e os arquivos exportados preservam os créditos cartográficos. O backend deve realizar o roteamento a pé e as chamadas de IA nos limites de divulgação dos registros (RNF008, RNF014, RNF023–RNF025).
 
-## 2. Segregação de Ambientes
+## Conferência da entrega
 
-O projeto opera com três ambientes lógicos totalmente isolados:
-
-1. **Desenvolvimento (Local / Preview Branches)**:
-   - Utilizado pela equipe de desenvolvimento.
-   - Banco SQLite in-memory para testes unitários ou Postgres local via Docker.
-   - Mock de S3 e provedores externos.
-2. **Homologação (Staging Railway)**:
-   - Espelho fiel do ambiente produtivo, acionado automaticamente em merges na branch `develop`.
-   - Utilizado para validação com os cenários de homologação T-01 a T-12 com dados sintéticos dos 95 participantes.
-3. **Produção (Railway Production)**:
-   - Acionado via releases tagueadas na branch `main`.
-   - Banco PostgreSQL com backups automáticos habilitados.
-   - Balde S3 com criptografia em repouso e permissões privadas estritas.
-
----
-
-## 3. Comandos de Inicialização no Railway
-
-### API (FastAPI)
-- **Root Directory**: `backend`
-- **Build Command**: `pip install --upgrade pip && pip install .`
-- **Start Command**:
-  ```bash
-  uvicorn app.main:app --host 0.0.0.0 --port $PORT
-  ```
-
-### Worker (Processo Assíncrono)
-- **Root Directory**: `backend`
-- **Build Command**: `pip install --upgrade pip && pip install .`
-- **Start Command**:
-  ```bash
-  python -m app.worker.main --poll-interval 2.0
-  ```
-
-### Frontend (React / Vite)
-- **Root Directory**: `frontend`
-- **Build Command**: `npm ci && npm run build`
-- **Start Command**: `npx serve -s dist -l $PORT`
-
----
-
-## 4. Gestão de Segredos e Variáveis de Ambiente
-
-Todas as variáveis sensíveis são injetadas exclusivamente pelo painel do Railway, nunca versionadas no Git:
-
-| Variável | Descrição | Onde Configurar |
-| :--- | :--- | :--- |
-| `SECRET_KEY` | Chave de 32+ caracteres criptográficos para assinar sessões | API, Worker |
-| `DATABASE_URL` | String de conexão segura gerada automaticamente pelo Railway Postgres | API, Worker |
-| `STORAGE_ENDPOINT_URL` | URL do endpoint S3 do Railway Bucket | API, Worker |
-| `STORAGE_ACCESS_KEY_ID` | Chave de acesso do bucket privado | API, Worker |
-| `STORAGE_SECRET_ACCESS_KEY`| Chave secreta do bucket privado | API, Worker |
-| `STORAGE_BUCKET_NAME` | Nome do balde no Railway Storage | API, Worker |
-| `CORS_ORIGINS` | Lista JSON com URLs autorizadas (ex: `["https://atlas-santos.up.railway.app"]`) | API |
-| `VITE_API_BASE_URL` | URL pública da API do backend | Frontend |
+Consultar `/health` para verificar o estado do banco e da API. Conferir a execução das migrações e a inicialização do worker separadamente. Para aceitar o produto, exercitar também as funcionalidades implementadas com uma equipe de teste, incluindo uma retirada e a falha de um provedor externo. O procedimento de [recuperação dos dados](backup-and-retention.md) abrange os arquivos e seus vínculos.
 

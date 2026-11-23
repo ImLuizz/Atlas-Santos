@@ -10,15 +10,18 @@ class AIDescriptionProposal(BaseModel):
 
 
 class AIProviderAdapter(ABC):
-    """Abstract port for multimodal AI models (image + reflection analysis)."""
+    """Backend provider contract for photo descriptions and the trip conclusion."""
 
     @abstractmethod
     async def generate_photo_descriptions(
         self,
         image_bytes: bytes,
         approved_reflection: str | None = None,
-        max_alternatives: int = 3,
-        max_length: int = 600,
     ) -> list[AIDescriptionProposal]:
-        """Analyzes image and reflection to suggest short descriptive alternatives."""
-        pass
+        """Suggest descriptions from an authorized EXIF-free derivative."""
+
+    @abstractmethod
+    async def draft_trip_conclusion(
+        self, approved_reflections: list[str], verified_book_context: str
+    ) -> str | None:
+        """Draft a synthesis for admin review, or return None for insufficient input."""

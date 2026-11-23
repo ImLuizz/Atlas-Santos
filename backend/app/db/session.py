@@ -11,15 +11,10 @@ from sqlalchemy.ext.asyncio import (
 
 logger = logging.getLogger(__name__)
 
-# Normalize sqlite URL for async if needed in tests
 database_url = settings.DATABASE_URL
-if database_url.startswith("sqlite://") and not database_url.startswith(
-    "sqlite+aiosqlite://"
-):
-    database_url = database_url.replace("sqlite://", "sqlite+aiosqlite://", 1)
 
 # Configure engine kwargs based on dialect
-engine_kwargs = {"echo": settings.DATABASE_ECHO}
+engine_kwargs = {"echo": settings.DATABASE_ECHO, "hide_parameters": True}
 if not database_url.startswith("sqlite"):
     engine_kwargs.update(
         {
@@ -52,12 +47,11 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-async def check_db_connection() -> bool:
+async def check_db_connection(session: AsyncSession) -> bool:
     """Verifies that the database is reachable and accepting queries."""
     try:
-        async with engine.connect() as conn:
-            await conn.execute(text("SELECT 1"))
+        await session.execute(text("SELECT 1"))
         return True
     except Exception as exc:
-        logger.warning(f"Database health check failed: {exc}")
+        logger.warning("Database health check failed (%s)", type(exc).__name__)
         return False

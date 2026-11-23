@@ -1,3 +1,1 @@
-"""
-Routes Domain Module — Pedestrian Route Reconstruction and Adjustments.
-"""
+"""Routes domain: automatic pedestrian route estimates from approved photographs."""

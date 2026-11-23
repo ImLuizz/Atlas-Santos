@@ -1,14 +1,5 @@
-# Módulo: Routes (Reconstrução e Edição de Percursos)
+# Reconstrução dos percursos
 
-## Responsabilidades
-- Reconstrução retrospectiva de percursos do atlas por dia com base nos pontos fotográficos de referência (RF-18, RN-11).
-- Integração com provedor de roteamento pedestre através de adaptador desacoplado (RN-11, RNF-08).
-- Edição do capitão: seleção de fotos de referência, reordenação, divisão de trechos da equipe e inserção de pontos intermediários (RF-19, RN-12).
-- Tratamento de percursos incompletos, lacunas temporais/espaciais e falhas de serviço externo (RF-20).
+O backend ordena cronologicamente as fotos aprovadas com localização definida, agrupa por equipe e dia e aciona um serviço de roteamento a pé. A reconstrução é automática e identifica o resultado como estimado (RF026 e RNF024). O mapa permite consultar uma equipe ou todas simultaneamente (RF005 a RF009 e RF027).
 
-## Invariantes
-- O percurso é sempre rotulado como "percurso reconstruído pelas fotos", distinguindo a sugestão do serviço do ajuste editorial humano (RN-11).
-- Linhas retas entre fotos não são apresentadas como ruas recuperadas (RF-18).
-- Falha no serviço de roteamento não bloqueia o acesso à galeria nem aos marcadores fotográficos (RF-20, Risco 02).
-- Distância calculada é uma estimativa de geometria, não medição de caminhada efetiva (RN-11).
-
+Quando os pontos não bastam para estimar o trajeto, os marcadores e as fotos disponíveis continuam acessíveis (RF028). Uma mudança ou retirada na origem invalida ou atualiza os resultados dependentes. O grau de precisão de divulgação também vale para o percurso (RNF008 e RNF011).

@@ -1,92 +1,89 @@
-# Resumo dos Requisitos do Sistema — Atlas Santos
+# Requisitos do Atlas Santos
 
-Este documento consolida os requisitos funcionais, regras de negócio e requisitos não funcionais extraídos da **Especificação de Requisitos do Atlas Santos (Versão 1.2)**.
+Fonte da revisão de 23/11/2026: *Especificação de requisitos — Atlas Santos*, arquivo recebido como `Atlas_Santos_Requisitos_do_Sistema_v1_3.pdf`. A capa informa **versão 1.2** e o histórico termina em **1.1**. Para identificar sem ambiguidade o documento de 16 páginas, seu SHA-256 é `8d5e0aae732cbdb02432af905007a17528e608a87746bcedf6640eb0b594ecc3`. A numeração abaixo segue as tabelas do PDF.
 
----
+## Situação verificada em 23/11
 
-## 1. Universo e Parâmetros Confirmados
-- **Participantes**: 95 pessoas (83 estudantes e 12 servidores do IFSP Campus Araraquara).
-- **Período da Viagem**: 05 a 11 de outubro de 2026 (fuso `America/Sao_Paulo`).
-- **Unidade de Organização**: 1 Atlas por Equipe (não existe entidade "projeto").
-- **Cota Base**: Padrão de 20 fotografias por participante em cada atlas autorizado (capacidade de referência: 1.900 fotos).
-- **Prazo de Entrega**: Aplicação homologada e entregue até **04/12/2026**.
+A revisão partiu do commit `1e4b512` da branch `main`. Naquele código, os únicos endpoints de aplicação registrados eram [as duas rotas de saúde](../../backend/app/api/v1/endpoints/health.py). A [migração inicial](../../backend/alembic/versions/2026_11_12_2155-45e99ca9977f_create_jobs_table.py) criava a tabela de tarefas. Havia uma página inicial, mas nenhum fluxo integrado de contas, acervo, curadoria, IA ou exportação. Um diretório de domínio, uma interface abstrata e um teste com respostas simuladas são evidências de estrutura. A homologação exige percorrer o fluxo com dados de teste e conferir o resultado.
 
----
+A matriz funcional descreve **o que falta demonstrar de ponta a ponta**. A matriz de qualidade distingue os componentes já presentes das verificações operacionais pendentes. O [plano de trabalho](../../TODO.md) organiza as dependências.
 
-## 2. Requisitos Funcionais (RF-01 a RF-30)
+## Requisitos funcionais
 
-| ID | Prioridade | Nome / Descrição | Critério de Aceite Principal |
-| :--- | :--- | :--- | :--- |
-| **RF-01** | P1 | Provisionar acesso dos participantes | Estudantes e servidores acessam por convite controlado sem copiar senhas do IF-Arbitra; não autorizados são bloqueados. |
-| **RF-02** | P1 | Autenticar e encerrar sessões | Login libera apenas atlas autorizados; logout/expiração encerra leitura e escrita privadas imediatamente. |
-| **RF-03** | P1 | Administrar equipes e vínculos | Gestão de equipes, atlas 1:1, capitães e cotas; servidor responsável não ganha função editorial automática. |
-| **RF-04** | P1 | Validar importação do IF-Arbitra | Recebe JSON administrativo e gera prévia com inclusões, atualizações e conflitos sem alterar o banco definitivo. |
-| **RF-05** | P1 | Confirmar e repetir importações | Confirmação idempotente que preserva IDs internos e histórico prévio de fotos mesmo se o IF-Arbitra estiver offline. |
-| **RF-06** | P1 | Conciliar as 95 pessoas | Relatório administrativo demonstra formalmente a conciliação dos 83 estudantes e 12 servidores sem descartar ninguém. |
-| **RF-07** | P1 | Apresentar painel do participante | Mostra atlas atual, cota, uso, reservas ativas, fotos enviadas, status editoriais e devolutivas. |
-| **RF-08** | P1 | Enviar arquivos com recuperação | Upload direto ao bucket com progresso e retentativa isolada de falhas; validação estrita no servidor. |
-| **RF-09** | P1 | Aplicar cota de forma atômica | Reserva concorrente e finalização respeitam o limite no PostgreSQL; impossível ultrapassar cota por concorrência. |
-| **RF-10** | P1 | Processar imagens e extrair EXIF | Gera miniatura (480px) e exibição (2048px); remove GPS dos derivados públicos; preserva original privado. |
-| **RF-11** | P1 | Corrigir localização e tempo | Permite associar coordenadas manuais a fotos sem GPS e ajustar hipóteses de fuso e dia da viagem. |
-| **RF-12** | P1 | Revisar fotografias | Capitão acessa fila do atlas e aprova, rejeita ou solicita ajustes com justificativa clara; auditado. |
-| **RF-13** | P1 | Revisar textos e temas separadamente | Ciclo de revisão independente: foto pode ser aprovada sem texto; rejeição de reflexão não desfaz foto. |
-| **RF-14** | P1 | Corrigir e reenviar após devolutiva | Participante ajusta e ressubmete sem perder autoria nem gastar cota duplicada. |
-| **RF-15** | P1 | Retirar e excluir conteúdo | Exclusão pelo autor, suspensão pelo capitão ou moderação administrativa; invalida artefatos dependentes. |
-| **RF-16** | P1 | Explorar mapa e galeria | Filtros combinados por equipe, dia e tema; fotos sem GPS aparecem na galeria normalmente. |
-| **RF-17** | P1 | Consultar um registro | Modal ou gaveta detalhada com foto, autor permitido, reflexão aprovada e descrição sem expor campos privados. |
-| **RF-18** | P1 | Sugerir ruas entre pontos fotográficos | Roteamento pedestre entre fotos conectáveis; resultado identificado como "percurso reconstruído pelas fotos". |
-| **RF-19** | P1 | Ajustar e aprovar um percurso | Capitão seleciona fotos-fonte, ajusta ordem, separa trechos e aprova versão vinculada às fotos de origem. |
-| **RF-20** | P1 | Tratar percursos incompletos | Trata 0 pontos, 1 ponto, horários empatados e falhas do roteador sem inventar caminhos fictícios. |
-| **RF-21** | P1 | Analisar imagem e reflexão | Modelo multimodal recebe imagem sem EXIF e reflexão aprovada para análise de conteúdo visual. |
-| **RF-22** | P1 | Sugerir alternativas de descrição | Sugere até 3 opções curtas com controle de tokens e identificação de autoria por IA; lida com ambiguidades. |
-| **RF-23** | P1 | Escolher e revisar descrições de IA | Usuário edita/escolhe sugestão; disponibilização final exige aprovação formal do capitão. |
-| **RF-24** | P1 | Registrar olhares e administrar temas | Temas pedagógicos (inspiração em *Sonho Manifesto*) e reflexões opcionais independentes. |
-| **RF-25** | P1 | Integrar reflexões aos canais autorizados | Apenas reflexões aprovadas entram em exportações ou como insumo de IA para publicação. |
-| **RF-26** | P1 | Gerar PDF e PNG | Exportação real de caderno A4 (PDF) e painel resumido (PNG) com mapa, fotos, créditos e aviso de percurso inferido. |
-| **RF-27** | P2 | Gerar HTML e GeoJSON | HTML portátil e GeoJSON estrito (longitude antes de latitude) sem expor metadados privados. |
-| **RF-28** | P1/P2 | Acompanhar e autorizar exportações | Tarefas persistidas na fila do worker com validação de permissão no pedido e no download. |
-| **RF-29** | P1 | Consultar auditoria e operação | Painel administrativo monitora logs de mutação, cotas, jobs em andamento e saúde geral sem expor segredos. |
-| **RF-30** | P1 | Gerenciar audiência e privacidade | Configuração de audiência da equipe e atendimento imediato de solicitações de suspensão/retirada de dados. |
+| ID | Página | Comportamento a verificar |
+| --- | --- | --- |
+| RF001 | 6 | A administração concilia os cadastros do IF-Arbitra e mantém os 83 estudantes, 12 servidores, equipes já formadas, capitães e um atlas por equipe. |
+| RF002 | 6 | Ao provisionar cada conta, o sistema envia automaticamente o e-mail com as credenciais de acesso. |
+| RF003 | 6 | Os três perfis entram com as credenciais recebidas e podem encerrar a sessão com segurança. |
+| RF004 | 6 | A tela de login oferece redefinição de senha. |
+| RF005 | 6 | O mapa apresenta os percursos estimados por equipe e dia de atividade. |
+| RF006 | 6 | A visão geral mostra simultaneamente os percursos das equipes. |
+| RF007 | 6 | A legenda interativa alterna entre dias e entre uma equipe e todas as equipes. |
+| RF008 | 7 | Selecionar uma equipe aproxima e centraliza seu percurso em 3D. Voltar à visão geral restaura o enquadramento de todas as equipes. |
+| RF009 | 7 | Fotos autorizadas com localização aparecem como marcadores. Selecionar um marcador abre foto, dados, legenda e reflexão disponíveis. |
+| RF010 | 7 | Participantes e capitães enviam **uma foto por formulário**, dentro da cota (padrão de 20 por participante por atlas), com tema e reflexão opcionais. |
+| RF011 | 7 | O formulário aproveita data, horário e coordenadas EXIF disponíveis para preencher os campos da foto. |
+| RF012 | 7 | O autor pode informar ou corrigir data, horário e localização. |
+| RF013 | 7 | A galeria mostra fotos aprovadas, destaca de início a equipe do usuário e combina filtros por equipe (inclusive todas) e dia. |
+| RF014 | 8 | O autor reabre o registro com a foto e os dados existentes, altera os campos desejados sem reenviar a imagem e a edição volta à aprovação antes da nova exibição. |
+| RF015 | 8 | O autor exclui seus registros e a administração pode retirar conteúdo. A retirada repercute na galeria, no mapa e nos percursos. |
+| RF016 | 8 | Fotos enviadas por participantes entram na fila do capitão da equipe correspondente. |
+| RF017 | 8 | O capitão analisa o registro completo, com imagem, dados, tema e reflexão, quando presentes. |
+| RF018 | 8 | A aprovação disponibiliza o registro no atlas conforme as permissões. O envio inicial do próprio capitão recebe aprovação automática. |
+| RF019 | 8 | A recusa exige uma justificativa que o participante consegue consultar. |
+| RF020 | 8 | O capitão recebe o registro corrigido e decide sobre a nova versão. |
+| RF021 | 9 | A reflexão opcional fica vinculada à foto no formulário de envio. |
+| RF022 | 9 | A administração cadastra, edita e disponibiliza temas e perguntas orientadoras. |
+| RF023 | 9 | A IA analisa o conteúdo visual da foto e usa a reflexão aprovada, quando houver. Na ausência dela, analisa só a imagem. |
+| RF024 | 9 | As sugestões são identificadas como geradas por IA e distinguem o que pode ser observado de inferências incertas. |
+| RF025 | 9 | O usuário escolhe, edita ou descarta a sugestão. O capitão revisa o texto escolhido com o registro antes da exibição. |
+| RF026 | 10 | O backend usa roteamento pedestre para reconstruir automaticamente o percurso da equipe no dia, em ordem de captura, a partir de fotos aprovadas e localizadas. |
+| RF027 | 10 | Para o dia selecionado, o mapa exibe o percurso de uma equipe ou os percursos de todas juntas. |
+| RF028 | 10 | Com pontos insuficientes para traçar o caminho, os marcadores e fotos disponíveis continuam acessíveis. |
+| RF029 | 10 | A síntese da viagem reúne apenas reflexões aprovadas de participantes e capitães. |
+| RF030 | 10–11 | A IA relaciona os relatos às ideias verificáveis de *Sonho Manifesto*, de Sidarta Ribeiro, preserva seu sentido e evita conclusões representativas quando faltam contribuições. |
+| RF031 | 11 | A administração revisa, pode editar e aprova a conclusão antes da publicação. |
+| RF032 | 11 | Participantes e capitães podem consultar a síntese aprovada em uma página própria. |
+| RF033 | 11 | PDF por equipe/dia com mapa, legenda, identificação e créditos, podendo incluir fotos selecionadas e textos aprovados. |
+| RF034 | 11 | PNG da visualização filtrada com marcadores, percursos e resolução legível. |
+| RF035 | 11 | GeoJSON dos pontos e trechos estimados, identificados como reconstruções. Cada posição usa longitude antes de latitude. |
+| RF036 | 11–12 | Conferir permissões antes de gerar e disponibilizar cada exportação. Excluir campos privados, EXIF bruto, credenciais e precisão geográfica acima da autorizada. |
 
----
+A visão geral (§1.1, p. 4) também prevê galeria, exportação HTML e organização por equipe/dia. O perfil administrativo (§1.2) inclui cotas, conciliação, rastreabilidade e privacidade. HTML permanece no planejamento com critérios de apresentação a detalhar. As prioridades acordadas são PDF/PNG primeiro, HTML/GeoJSON em seguida.
 
-## 3. Regras de Negócio Fundamentais (RN-01 a RN-16)
+## Requisitos não funcionais
 
-- **RN-01 (Atlas por Equipe)**: Cada equipe tem seu atlas exclusivo; não há entidade "projeto".
-- **RN-02 (Universo de 95 Participantes)**: 83 estudantes e 12 servidores devem estar conciliados; ausência temporária no IF-Arbitra não remove participante do acervo.
-- **RN-03 (Cota do Vínculo)**: 20 fotos por participante em cada atlas autorizado, sem reinício diário, aplicada no PostgreSQL com URLs pré-assinadas.
-- **RN-04 (Consumo e Liberação)**: Fotos pendentes, aprovadas e rejeitadas ocupam cota; exclusão pelo autor libera cota; rejeição não libera automaticamente (confirmar em D-02).
-- **RN-05 (Concorrência e Repetição)**: Transações atômicas impedem ultrapassar a cota por requisições simultâneas.
-- **RN-06 (Curadoria Obrigatória)**: Nenhuma foto é disponibilizada sem aprovação do capitão autorizado; autoaprovação do capitão é auditada.
-- **RN-07 (Aprovação e Divulgação Independentes)**: Aprovação editorial é distinta de autorização de divulgação e da política de audiência.
-- **RN-08 (Revisões Independentes)**: Mídia, legendas, reflexões e percursos têm ciclos de vida separados. Foto pode ser publicada sem texto.
-- **RN-09 (Instante de Captura)**: Ordenação baseada no instante de captura corrigido pelo EXIF/autor, nunca na hora do upload.
-- **RN-10 (Ausência de Metadados)**: Fotos sem GPS participam da galeria; para entrar no mapa exigem localização informada e revisada.
-- **RN-11 (Ruas Prováveis)**: O percurso conecta referências por perfil pedestre real; rotulado como "reconstruído pelas fotos"; distância é estimativa.
-- **RN-12 (Separação da Equipe)**: Capitão pode separar trechos quando subgrupos caminharam por vias distintas.
-- **RN-13 (Reflexão Opcional)**: Ausência de reflexão ou tema não penaliza participante nem impede aprovação da foto.
-- **RN-14 (Autoria e IA)**: A reflexão humana é estritamente diferenciada das sugestões da IA; a IA é tratada como não confiável.
-- **RN-15 (Seleção Comum aos Canais)**: Regras de elegibilidade idênticas entre mapa, galeria, IA e exportações.
-- **RN-16 (Retirada e Dependências)**: Suspensão ou exclusão invalida descrições, percursos e exportações geradas dependentes.
+| ID | Página | Exigência e evidência necessária |
+| --- | --- | --- |
+| RNF001 | 12 | Atender ao uso simultâneo dos 95 participantes. Falta ensaio com consultas e contribuições representativas. |
+| RNF002 | 12 | Armazenar e consultar cerca de 1.900 fotografias. Falta medir filtros, mapa e galeria com esse volume de teste. |
+| RNF003 | 12 | Mídia, IA, rotas e exportações não bloqueiam a consulta. Há [worker e fila](../../backend/app/worker/dispatcher.py); falta exercitar os quatro tipos de operação durante a navegação. |
+| RNF004 | 12 | Usar HTTPS em produção. Conferir o domínio publicado e a proteção da sessão no ambiente real. |
+| RNF005 | 12 | O servidor verifica permissões por recurso. Testar os três perfis nos endpoints de negócio, inclusive alterações e retiradas. |
+| RNF006 | 12 | Armazenar credenciais com segurança, invalidar sessões no logout/revogação e manter os segredos fora do navegador. A configuração é apenas parte da evidência. |
+| RNF007 | 13 | Restringir originais, dados pessoais e localização precisa. Verificar remoção de todo EXIF nos derivados exibidos. |
+| RNF008 | 13 | Compartilhar o mínimo autorizado com serviços externos. Conferir as restrições da fonte nas rotas e exportações. |
+| RNF009 | 13 | Verificar os fluxos principais em computador, tablet e celular. Uma página inicial responsiva não comprova os fluxos futuros. |
+| RNF010 | 13 | Testar rótulos, foco, teclado, erros associados, alternativa em lista ao mapa e estados reconhecíveis além da cor. |
+| RNF011 | 13 | Edições, exclusões e aprovações atualizam o acervo e atualizam ou invalidam resultados dependentes de registros antigos. |
+| RNF012 | 14 | Recuperar falhas e permitir nova tentativa com preservação dos registros. Testar também indisponibilidade de cada provedor sem interromper consultas independentes. |
+| RNF013 | 14 | Servidor valida formato, tamanho e características do arquivo. Textos e imagens de participantes são dados, inclusive na entrada da IA. |
+| RNF014 | 14 | Mapas e exportações exibem os créditos exigidos e a integração respeita os termos de cada provedor. Conferir na saída efetiva. |
+| RNF015 | 14 | Railway com configurações próprias para desenvolvimento, homologação e produção. O guia de implantação precisa ser validado nesses ambientes. |
+| RNF016 | 14–15 | Há [OpenAPI para a API existente](../api/README.md). Documentar contratos, erros consistentes e mensagens seguras nos endpoints de negócio à medida que forem entregues. |
+| RNF017 | 15 | Testar backup e restauração conjunta do PostgreSQL e dos arquivos, preservando os vínculos e respeitando retiradas. O [roteiro](../operations/backup-and-retention.md) orienta o ensaio. |
+| RNF018 | 15 | Python/FastAPI presentes no [ponto de entrada da API](../../backend/app/main.py). |
+| RNF019 | 15 | React com JavaScript/JSX, Vite e Tailwind presentes no [frontend](../../frontend/package.json). |
+| RNF020 | 15 | PostgreSQL com SQLAlchemy e Alembic configurados. A tabela de tarefas é infraestrutura; as entidades de participantes, fotos e curadoria ainda precisam de persistência e testes próprios. |
+| RNF021 | 15 | Armazenar fotos e arquivos gerados em Railway Buckets compatível com S3. Há [contrato de armazenamento](../../backend/app/integrations/storage/base.py); falta exercício com bucket autorizado. |
+| RNF022 | 15 | Validar hospedagem Railway e isolamento entre desenvolvimento e produção, incluindo homologação prevista em RNF015. |
+| RNF023 | 15 | O frontend já declara Mapbox GL JS e deck.gl e aceita o token público. Falta renderizar o mapa, os pontos e os percursos e validar a consulta com dados autorizados. |
+| RNF024 | 15 | O [contrato de roteamento](../../backend/app/integrations/routing/base.py) deve se ligar a um serviço pedestre no backend. Falta a integração operacional. |
+| RNF025 | 16 | Integrar o backend a serviço de IA para descrições de fotos e conclusão coletiva. O [contrato](../../backend/app/integrations/ai/base.py) não comprova processamento com provedor. |
 
----
+## Pontos que exigem decisão da equipe
 
-## 4. Requisitos Não Funcionais (RNF-01 a RNF-16)
-
-- **RNF-01 (Autorização e Sessão)**: Validação centralizada no servidor; HTTPS em produção; cookies seguros HTTP-only.
-- **RNF-02 (Privacidade por Padrão)**: Remoção de EXIF/GPS de derivados divulgáveis; originais mantidos em área privada.
-- **RNF-03 (Integridade e Rastreabilidade)**: Transações ACID no PostgreSQL; rastreamento de revisões e auditoria.
-- **RNF-04 (Celular e Acessibilidade)**: Funcional em 360px de largura sem rolagem horizontal; navegação por teclado e contraste.
-- **RNF-05 (Desempenho e Capacidade)**: P95 de leituras < 1s; processamento pesado assíncrono sem bloquear consultas HTTP.
-- **RNF-06 (Recuperação de Tarefas)**: Tarefas assíncronas persistidas no PostgreSQL com recuperação automática após reinício do worker.
-- **RNF-07 (Segurança de Arquivos e Textos)**: Validação de assinatura MIME e limites (15 MB/40 MP); proteção contra scripts e prompt injection.
-- **RNF-08 (Custos e Tetos)**: Tetos configuráveis para IA, roteamento e exportações com bloqueio automático ao atingir o limite.
-- **RNF-09 (Cartografia e Atribuição)**: Créditos obrigatórios OpenStreetMap em tela e em impressões PDF.
-- **RNF-10 (Implantação Reproduzível)**: Configurações fixadas, migrações versionadas com Alembic e segregação de ambientes no Railway.
-- **RNF-11 (Backup e Retenção)**: Proteção separada para banco e bucket S3 com metas operacionais a validar em D-09.
-- **RNF-12 (Contratos e Observabilidade)**: OpenAPI padronizado; respostas de erro com correlation ID e sem stack traces vazados.
-- **RNF-13 (Versionamento Explícito de Contratos)**: Esquemas de dados e artefatos salvos contêm versão explícita do contrato.
-- **RNF-14 (Idempotência para Operações Mutáveis)**: Requisições com chave de idempotência repetidas não duplicam reservas ou cotas.
-- **RNF-15 (Rastreabilidade de Dependências)**: Grafo de dependência de revisões para permitir invalidação automática em cascata.
-- **RNF-16 (Reconciliação Banco-Bucket)**: Rotina periódica no worker para expurgar arquivos órfãos sem referência no banco há mais de 24h.
-
+- **Nova edição de uma foto do capitão.** RF018 dá aprovação automática ao envio de foto própria. RF014 manda qualquer edição voltar à aprovação. Especificar como o capitão revisa a edição da própria foto, mantendo a regra explícita de reavaliação. RF025 exige revisão do texto escolhido antes de exibi-lo.
+- **Cota.** RF010 fixa 20 como limite e §1.2 descreve 20 como padrão com gestão administrativa. Manter o padrão por participante/atlas e definir a política de alteração da cota e contagem de retiradas e recusas. A cota deve resistir a envios simultâneos.
+- **Divulgação e operação.** Definir o público autorizado, a precisão geográfica por público, os limites de arquivo e o procedimento de recuperação. A especificação exige controle, atribuição e recuperação; os provedores de IA e de roteamento, os prazos de retenção e os objetivos de recuperação ainda precisam de decisão operacional.
+- **Conclusão e HTML.** A equipe pedagógica precisa definir como reconhecer contribuições insuficientes e validar a relação com o livro. Para o HTML, falta especificar o conteúdo e o comportamento do arquivo exportado.

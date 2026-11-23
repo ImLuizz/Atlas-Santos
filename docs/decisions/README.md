@@ -1,24 +1,12 @@
-# Registros de Decisão Arquitetural (ADRs) — Atlas Santos
+# Decisões de arquitetura
 
-Este diretório contém os **Architecture Decision Records (ADRs)** que formalizam escolhas arquiteturais fundamentais do sistema, registrando contexto, alternativas analisadas, decisões adotadas e suas consequências.
+Estes registros explicam as escolhas da base do Atlas Santos e sua relação com a [especificação de requisitos](../requirements/requirements-summary.md).
 
-## Índice de Decisões
+| Registro | Aplicação |
+| --- | --- |
+| [ADR-0001 · API modular e worker separado](ADR-0001-modular-monolith-and-worker.md) | Processos de API e worker existentes. Os trabalhos do produto dependem de implementação. |
+| [ADR-0002 · Tecnologias do Atlas Santos](ADR-0002-technology-stack.md) | Tecnologias exigidas e fronteira entre mapas, roteamento e IA. |
+| [ADR-0003 · Dados, fila e armazenamento](ADR-0003-data-and-outbox-strategy.md) | Tabela de tarefas existente e proposta de integração com dados e arquivos. |
 
-| ID | Título | Status | Data |
-| :--- | :--- | :--- | :--- |
-| [ADR-0001](./ADR-0001-modular-monolith-and-worker.md) | Adoção de Monólito Modular com Worker Assíncrono Separado | **Aprovado** | 12/11/2026 |
-| [ADR-0002](./ADR-0002-technology-stack.md) | Stack Tecnológica Oficial (FastAPI, React, Vite, PostgreSQL) | **Aprovado** | 12/11/2026 |
-| [ADR-0003](./ADR-0003-data-and-outbox-strategy.md) | Estratégia de Dados, Transactional Outbox e Armazenamento de Objetos | **Aprovado** | 12/11/2026 |
-
----
-
-## Formato Padrão para Novos ADRs
-
-Ao propor uma nova decisão técnica significativa, a equipe deve criar um novo arquivo `ADR-XXXX-<titulo>.md` seguindo o modelo:
-
-1. **Título e Metadados** (Status, Data, Decisores)
-2. **Contexto e Formulação do Problema**
-3. **Alternativas Consideradas**
-4. **Decisão Arquitetural**
-5. **Consequências** (Positivas e Negativas/Compromissos)
+Ao registrar nova decisão, identificar o problema, a escolha feita, as consequências para o produto e quais requisitos ela atende.
 

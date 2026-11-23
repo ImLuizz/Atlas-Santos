@@ -1,9 +1,5 @@
-# Camada de Integrações e Adaptadores Externos — Atlas Santos
+# Contratos de serviços externos
 
-Este diretório implementa o padrão **Hexagonal / Ports and Adapters** para isolar o núcleo da aplicação de provedores externos proprietários (ver [ADR-06](../../../docs/decisions/ADR-0001-modular-monolith-and-worker.md)).
+Os arquivos `base.py` descrevem as interfaces de armazenamento privado compatível com S3 (RNF021), roteamento a pé pelo backend (RNF024) e IA para descrições e conclusão da viagem (RNF025). Não há clientes de produção ou processadores registrados para esses serviços nesta versão.
 
-## Diretrizes
-1. O domínio de negócio conversa apenas com a interface abstrata (`base.py`).
-2. Implementações concretas de fornecedores de IA, Roteamento e Armazenamento podem ser substituídas sem alterar os casos de uso.
-3. Tratamento defensivo de falhas: timeouts, retentativas com backoff e circuit breakers são implementados nos adaptadores (Risco 02).
-
+Ao implementar uma integração, limitar o envio aos dados autorizados, prever falhas sem bloquear a navegação e respeitar as atribuições exigidas pelo provedor (RNF008, RNF012 e RNF014).
