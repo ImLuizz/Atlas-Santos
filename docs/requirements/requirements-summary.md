@@ -1,154 +1,194 @@
-# Atlas Santos · Requisitos do sistema
+# Especificação de Requisitos: Atlas Santos
 
-De 5 a 11 de outubro de 2026, 83 estudantes e 12 servidores do IFSP Campus Araraquara participaram do estudo do meio em Santos. Cada equipe terá seu próprio atlas para reunir as fotografias da viagem, registrar reflexões e revisitar os caminhos que provavelmente percorreu em cada dia.
+## 1. Levantamento de Requisitos
 
-**Onde o projeto está hoje.** Em 23 de novembro, a página inicial na Vercel já se comunicava com a API e o PostgreSQL no Railway. O código também inclui um worker para processar tarefas em segundo plano. Cadastro, envio de fotos, curadoria, mapas e exportações fazem parte das próximas entregas.
+### 1.1 Visão Geral do Sistema
 
-## O que o Atlas precisa fazer
+O sistema Atlas Santos é uma aplicação web de cartografia colaborativa desenvolvida para organizar fotografias, memórias e aprendizagens do Estudo do Meio realizado em Santos, no período de 05 a 11 de outubro de 2026. O projeto adota o conceito de um Atlas por equipe, alimentado pelos registros dos participantes e validado por curadoria.
 
-Os códigos e as páginas nas tabelas correspondem à especificação original. Assim, quem desenvolve e quem revisa pode citar a mesma regra.
+O objetivo principal da plataforma é entregar um acervo digital estruturado por equipe e dia de atividade, reunindo mapa interativo, galeria de imagens, percursos reconstruídos retrospectivamente a partir das fotografias, descrições assistidas por inteligência artificial (sempre sujeitas à revisão humana), reflexões pedagógicas individuais com síntese coletiva inspirada na obra Sonho Manifesto e exportação de documentos em múltiplos formatos (PDF, PNG, HTML e GeoJSON).
 
-### Contas e equipes
+### 1.2 Público-Alvo
 
-A administração também acompanha o histórico das alterações no acervo, gerencia as cotas e define quem pode acessar os dados, conforme o perfil administrativo descrito na seção 1.2 da especificação.
+O sistema define três perfis de usuários principais, cada um com responsabilidades, permissões e fluxos de trabalho distintos dentro da plataforma:
 
-| Código | Regra | Pág. |
+- Participante (Estudante e Servidor): Usuário responsável por acessar o sistema por meio de convite controlado, consultar sua cota de envio (padrão de 20 fotografias por atlas), enviar arquivos de imagem diretamente para o armazenamento seguro, corrigir metadados de data e localização, preencher temas e reflexões pedagógicas opcionais no módulo Olhares sobre Santos, e acompanhar o status editorial de seus registros no painel pessoal.
+
+- Capitão do Atlas: Usuário encarregado da curadoria e da gestão de sua respectiva equipe. Tem a responsabilidade de acessar a fila de submissões do seu atlas, revisar, aprovar, solicitar ajustes ou rejeitar (com justificativa) fotografias, legendas e reflexões, além de selecionar as descrições sugeridas pela inteligência artificial.
+
+- Administração: Responsável por gerenciar o controle geral e a segurança da plataforma. Suas principais atribuições incluem importar e conciliar os dados dos 95 participantes (83 estudantes e 12 servidores) vindos do sistema IF-Arbitra, realizar o provisionamento dos acessos (via envio de e-mail com as credenciais) e definir as regras de cotas de fotos. Além disso, o administrador acompanha o histórico de alterações no sistema para garantir a rastreabilidade das ações (como saber quem alterou uma cota ou aprovou um registro) e gerencia solicitações de privacidade, podendo suspender ou remover conteúdos quando necessário.
+
+### 1.3 Classificação dos Requisitos
+
+Os requisitos para o desenvolvimento e implementação do Atlas Santos estão classificados nas seguintes categorias:
+
+- Requisitos Funcionais (RF): Especificam os serviços e funcionalidades que o sistema deve fornecer ao usuário. Eles definem o que o sistema fará, e a forma como ele processará entradas e responderá em determinadas situações. São os requisitos obrigatórios, que descrevem o comportamento principal do software.
+
+- Requisitos Não Funcionais (RNF): Especificam os critérios de qualidade e as restrições que o sistema deve cumprir. Eles descrevem como o sistema deve ser (rápido, seguro, intuitivo). Dessa forma, os RNF atuam como um complemento obrigatório dos requisitos funcionais.
+
+### 1.4 Especificação dos Requisitos
+
+#### 1.4.1 Requisitos Funcionais (RF)
+
+##### 1.4.1.1 Acesso Controlado e Autenticação
+
+| ID | Descrição | Autor(es) | Base |
+| --- | --- | --- | --- |
+| RF001 | O sistema deve permitir que a administração mantenha o cadastro prévio dos participantes autorizados (83 estudantes e 12 servidores), suas respectivas equipes já formadas, o vínculo com o Atlas de cada grupo e a definição de quem exerce a função de capitão. | Administração | Gestão de Vínculos |
+| RF002 | O sistema deve enviar automaticamente um e-mail com as credenciais de acesso para todos os usuários cadastrados. | Sistema/Administração | Provisionamento |
+| RF003 | O sistema deve permitir que os usuários façam login utilizando as credenciais recebidas por e-mail, bem como realizar o logout seguro da conta a qualquer momento. | Participantes, Capitão e Administração | Login/Logout |
+| RF004 | O sistema deve permitir que os usuários redefinam suas senhas caso desejem, disponibilizando essa opção diretamente na tela de login. | Participantes, Capitão e Administração | Gestão de Conta |
+
+##### 1.4.1.2 Atlas Interativo e Visualização dos Percursos
+
+| ID | Descrição | Autor(es) | Base |
+| --- | --- | --- | --- |
+| RF005 | O sistema deve disponibilizar um mapa interativo do Atlas Santos, permitindo visualizar os percursos estimados das equipes durante a viagem, organizados por equipe e dia de atividade | Participantes e Capitão | Visualização do Atlas |
+| RF006 | O sistema deve permitir visualizar os percursos de todas as equipes simultaneamente, proporcionando uma visão geral das atividades realizadas durante a viagem. | Participantes e Capitão | Visão Geral dos Percursos |
+| RF007 | O sistema deve disponibilizar uma legenda interativa que permita selecionar ou alternar entre equipes e dias da viagem, controlando quais percursos são exibidos no mapa. Deve ser possível visualizar o percurso de uma equipe ou todos os percursos simultaneamente. | Participantes e Capitão | Legenda e Filtros do Mapa |
+| RF008 | Ao selecionar uma equipe específica, o sistema deve aproximar e centralizar o mapa em seu percurso, proporcionando uma visualização mais detalhada, com representação tridimensional do trajeto. Ao retornar à visão geral de todas as equipes, deve apresentar novamente o mapa em sua visualização geral. | Participantes e Capitão | Visualização Detalhada dos Percursos |
+| RF009 | O sistema deve apresentar marcadores no mapa correspondentes às fotografias que possuem localização definida e estão autorizadas para exibição. Ao selecionar um marcador, deve permitir visualizar a fotografia e suas informações, incluindo os dados do registro, legenda e reflexão, quando disponíveis. | Participantes e Capitão | Marcadores e Detalhamento das Fotografias |
+
+##### 1.4.1.3 Gestão e Visualização das Fotografias
+
+| ID | Descrição | Autor(es) | Base |
+| --- | --- | --- | --- |
+| RF010 | O sistema deve permitir que participantes e capitães enviem fotografias da viagem por meio de um formulário, sendo permitido o envio de uma fotografia por preenchimento e respeitando o limite de 20 fotografias por participante. O formulário também deve disponibilizar campos para o registro de uma reflexão e a seleção de um tema, quando disponível. | Participantes e Capitão | Envio de Fotografias |
+| RF011 | O sistema deve identificar e extrair os metadados EXIF disponíveis nas fotografias, como data, horário e localização, utilizando essas informações para preencher automaticamente os campos correspondentes do formulário de envio. | Participantes e Capitão | Aproveitamento de Metadados |
+| RF012 | O sistema deve permitir que o participante informe ou corrija manualmente os dados da fotografia, como localização, data e horário, caso estejam ausentes ou incorretos. | Participantes e Capitão | Complementação dos Dados |
+| RF013 | O sistema deve disponibilizar uma galeria de fotografias aprovadas, organizadas por equipe e dia da viagem. Na visualização inicial, deve destacar a equipe à qual o usuário pertence, oferecendo acesso rápido às suas fotografias. A galeria deve permitir filtrar as fotografias por equipe, incluindo a opção de visualizar todas as equipes, e por dia da viagem, permitindo combinar os dois filtros. | Participantes e Capitão | Galeria de Fotografias |
+| RF014 | O sistema deve permitir que os usuários editem os próprios registros de fotografias após o envio, carregando previamente os dados existentes, incluindo a imagem anexada. O usuário poderá alterar apenas os campos desejados, sem precisar enviar novamente a fotografia. Após qualquer edição, o registro deverá retornar para aprovação do capitão antes de voltar a ser disponibilizado no Atlas. | Participantes e Capitão | Edição das Fotografias |
+| RF015 | O sistema deve permitir que o participante exclua os próprios registros de fotografias e que a administração realize a retirada de registros do Atlas quando necessário, especialmente em situações relacionadas à privacidade. A exclusão ou retirada deverá refletir na galeria, no mapa e nos percursos estimados, impedindo que o conteúdo retirado continue sendo disponibilizado. | Participantes e Administração | Exclusão e Retirada de Fotografias |
+
+##### 1.4.1.4 Curadoria e Gestão das Fotografias pelo Capitão
+
+| ID | Descrição | Autor(es) | Base |
+| --- | --- | --- | --- |
+| RF016 | O sistema deve encaminhar os registros de fotografias enviados pelos participantes para uma fila de revisão do capitão responsável pela equipe correspondente. | Capitão | Fila de Revisão |
+| RF017 | O sistema deve permitir que o capitão analise o registro completo da fotografia, incluindo a imagem, os dados informados, o tema selecionado e a reflexão registrada, quando houver. | Capitão | Análise dos Registros |
+| RF018 | O sistema deve permitir que o capitão aprove os registros analisados, tornando-os disponíveis no Atlas. As fotografias enviadas pelo próprio capitão devem ser aprovadas automaticamente, sem necessidade de passar pela fila de revisão. | Capitão | Aprovação das Fotografias |
+| RF019 | O sistema deve permitir que o capitão não aprove um registro, exigindo o preenchimento de uma justificativa que deverá ser disponibilizada ao participante responsável. | Capitão | Justificativa de Não Aprovação |
+| RF020 | O sistema deve permitir que o capitão revise novamente os registros corrigidos pelos participantes e reenviados para aprovação, considerando todas as informações atualizadas antes de aprová-los ou não aprová-los. | Capitão | Revisão de Registros Corrigidos |
+
+##### 1.4.1.5 Olhares sobre Santos
+
+| ID | Descrição | Autor(es) | Base |
+| --- | --- | --- | --- |
+| RF021 | O sistema deve permitir que os participantes registrem reflexões relacionadas às fotografias enviadas, por meio dos campos disponíveis no formulário de envio, conforme descrito no RF010. | Participantes e Capitão | Registro de Reflexões |
+| RF022 | O sistema deve permitir que a administração cadastre, edite e disponibilize temas e perguntas orientadoras para o módulo Olhares sobre Santos, que servirão como estímulo para as reflexões dos participantes. | Administração | Administração de Temas e Perguntas |
+
+##### 1.4.1.6 Descrições das Fotografias por Inteligência Artificial
+
+| ID | Descrição | Autor(es) | Base |
+| --- | --- | --- | --- |
+| RF023 | O sistema deve analisar o conteúdo visual das fotografias enviadas e utilizar a reflexão aprovada associada a elas, quando disponível, como contexto complementar para a análise. Caso não exista uma reflexão aprovada, a análise deverá considerar somente o conteúdo da imagem. | Sistema | Análise de Fotografias por IA |
+| RF024 | O sistema deve gerar sugestões de descrição para as fotografias com base na análise realizada, relacionando os elementos identificados na imagem à reflexão utilizada, quando disponível. As sugestões devem ser identificadas como geradas por inteligência artificial e não devem apresentar como certos elementos ou informações que não possam ser confirmados. | Sistema | Geração de Descrições por IA |
+| RF025 | O sistema deve permitir que o usuário escolha uma das sugestões de descrição geradas pela inteligência artificial, edite seu conteúdo ou descarte as sugestões. A descrição escolhida ou editada deverá ser encaminhada para a revisão do capitão junto ao registro da fotografia, antes de sua disponibilização no Atlas. | Participantes e Capitão | Revisão de Descrições por IA |
+
+##### 1.4.1.7 Reconstrução e Visualização dos Percursos
+
+| ID | Descrição | Autor(es) | Base |
+| --- | --- | --- | --- |
+| RF026 | O sistema deve gerar automaticamente percursos estimados para cada equipe e dia da viagem, utilizando como referência as fotografias aprovadas que possuem localização definida. A geração deverá considerar a sequência cronológica dos registros e utilizar um algoritmo de roteamento para conectar os pontos por caminhos disponíveis. | Sistema | Reconstrução dos Percursos |
+| RF027 | O sistema deve apresentar os percursos estimados no mapa interativo descrito nos RF005 a RF008, permitindo visualizar individualmente o percurso de qualquer equipe ou os percursos de todas as equipes simultaneamente, conforme o dia da viagem selecionado. | Participantes e Capitão | Visualização dos Percursos |
+| RF028 | O sistema deve tratar situações em que não existam pontos suficientes ou informações de localização para gerar um percurso estimado, mantendo disponíveis os marcadores e as fotografias que puderem ser exibidos no mapa, conforme o comportamento definido no RF009. | Sistema | Tratamento de Percursos Incompletos |
+
+##### 1.4.1.8 Conclusão da Viagem por Inteligência Artificial
+
+| ID | Descrição | Autor(es) | Base |
+| --- | --- | --- | --- |
+| RF029 | O sistema deve reunir as reflexões aprovadas registradas pelos participantes e capitães nos diferentes registros de fotografias, considerando o conjunto de contribuições realizadas durante a viagem como base para a elaboração de sua conclusão. | Sistema | Reunião das Reflexões |
+| RF030 | O sistema deve utilizar inteligência artificial para analisar o conjunto das reflexões reunidas e elaborar um texto de conclusão sobre a viagem, estabelecendo relações entre as experiências e percepções relatadas pelos participantes e capitães e as ideias presentes no livro Sonho Manifesto, de Sidarta Ribeiro. O texto deve preservar o sentido das contribuições analisadas, sem distorcer os relatos ou atribuir à obra ideias, citações ou afirmações não verificadas. Caso o conteúdo disponível seja insuficiente para uma análise consistente, o sistema não deverá apresentar uma conclusão como se fosse representativa da experiência coletiva. | Sistema | Geração da Conclusão por IA |
+| RF031 | O sistema deve permitir que a administração revise o texto de conclusão gerado pela inteligência artificial antes de sua publicação, podendo aprová-lo ou realizar alterações em seu conteúdo. | Administração | Revisão da Conclusão |
+| RF032 | O sistema deve disponibilizar uma página própria no Atlas Santos para apresentar a conclusão aprovada da viagem, permitindo que participantes e capitães consultem a síntese das experiências e reflexões registradas. | Participantes e Capitão | Página de Conclusão da Viagem |
+
+##### 1.4.1.9 Exportação do Atlas
+
+| ID | Descrição | Autor(es) | Base |
+| --- | --- | --- | --- |
+| RF033 | O sistema deve permitir a exportação do Atlas em formato PDF, considerando o recorte selecionado pelo usuário, como equipe e dia da viagem. O documento deverá apresentar o mapa, a legenda, a identificação do conteúdo exportado e os créditos correspondentes, permitindo incluir fotografias selecionadas e seus textos aprovados. | Participantes e Capitão | Exportação em PDF |
+| RF034 | O sistema deve permitir a exportação da visualização do mapa em formato PNG, considerando os filtros aplicados e apresentando os percursos estimados, marcadores e elementos visuais correspondentes ao recorte selecionado. A imagem deverá manter proporções adequadas e resolução suficiente para leitura das informações, sem tentar incluir uma galeria extensa de fotografias. | Participantes e Capitão | Exportação em PNG |
+| RF035 | O sistema deve permitir a exportação dos dados geográficos do Atlas em formato GeoJSON, incluindo os pontos correspondentes às fotografias com localização definida e os segmentos dos percursos estimados. Os dados deverão respeitar o padrão do formato, utilizando longitude antes de latitude e identificando os percursos como reconstruções estimadas. | Participantes e Capitão | Exportação em GeoJSON |
+| RF036 | O sistema deve verificar as permissões de acesso e a autorização de exibição dos registros antes de gerar e disponibilizar os arquivos exportados. Os arquivos não devem conter informações privadas, metadados EXIF brutos, credenciais ou dados de acesso ao armazenamento das fotografias, nem informações de localização mais precisas do que as autorizadas. | Sistema | Controle de Exportações |
+
+#### 1.4.2 Requisitos Não Funcionais (RNF)
+
+##### 1.4.2.1 Desempenho
+
+| ID | Descrição | Categoria |
 | --- | --- | --- |
-| RF001 | A administração confere os cadastros vindos do IF-Arbitra e mantém os 83 estudantes, os 12 servidores e a composição das equipes. Cada equipe tem um capitão e um atlas. | 6 |
-| RF002 | Quando uma conta é criada, seu titular recebe automaticamente por e-mail as credenciais de acesso. | 6 |
-| RF003 | Participantes, capitães e administradores entram com suas credenciais e podem encerrar a sessão com segurança. | 6 |
-| RF004 | Quem esquecer a senha pode redefini-la pela própria tela de login. | 6 |
+| RNF001 | O sistema deverá suportar o acesso dos 95 participantes previstos, mantendo o funcionamento adequado de suas funcionalidades durante os períodos de utilização simultânea. | Desempenho |
+| RNF002 | O sistema deverá suportar o armazenamento e a consulta de aproximadamente 1.900 fotografias, considerando o limite previsto de 20 fotografias por participante, sem comprometer o funcionamento das funcionalidades de visualização, filtros e navegação. | Desempenho |
+| RNF003 | O processamento de fotografias, geração de descrições por inteligência artificial, reconstrução de percursos e exportação de arquivos não deverá bloquear as operações comuns de consulta e navegação do sistema. | Desempenho |
 
-### Consulta ao mapa
+##### 1.4.2.2 Segurança
 
-| Código | Regra | Pág. |
+| ID | Descrição | Categoria |
 | --- | --- | --- |
-| RF005 | O mapa mostra o percurso estimado de cada equipe por dia de atividade. | 6 |
-| RF006 | Na visão geral, os percursos das equipes aparecem juntos para permitir a comparação. | 6 |
-| RF007 | Pela legenda, é possível mudar o dia e escolher entre uma equipe e todas as equipes. | 6 |
-| RF008 | Ao selecionar uma equipe, o mapa aproxima e centraliza seu percurso em 3D. Ao voltar à visão geral, todas as equipes voltam a caber na tela. | 7 |
-| RF009 | Cada foto autorizada que tenha localização aparece como um marcador. Ao abri-lo, a pessoa vê a imagem e, quando disponíveis, seus dados, a legenda e a reflexão. | 7 |
+| RNF004 | O sistema deverá utilizar comunicação segura por HTTPS em ambiente de produção, protegendo as informações transmitidas entre os usuários e o servidor. | Segurança |
+| RNF005 | O sistema deverá validar, no servidor, as permissões dos usuários antes de permitir operações sobre contas, fotografias, registros e demais recursos, impedindo o acesso não autorizado por meio da alteração direta de identificadores ou endereços de acesso. | Segurança |
+| RNF006 | As sessões dos usuários deverão ser protegidas contra utilização indevida, incluindo o armazenamento seguro das credenciais e a invalidação do acesso após o encerramento ou revogação da sessão. Informações sensíveis e segredos de integração deverão permanecer protegidos no servidor, sem exposição no código disponibilizado ao navegador. | Segurança |
 
-### Envio de fotos e galeria
+##### 1.4.2.3 Privacidade e Proteção de Dados
 
-| Código | Regra | Pág. |
+| ID | Descrição | Categoria |
 | --- | --- | --- |
-| RF010 | Participantes e capitães enviam uma foto por formulário. A cota padrão é de 20 fotos por pessoa em cada atlas. Tema e reflexão são opcionais. | 7 |
-| RF011 | Se o arquivo contiver metadados EXIF, o formulário aproveita a data, o horário e as coordenadas disponíveis. | 7 |
-| RF012 | O autor pode preencher ou corrigir a data, o horário e o local da foto. | 7 |
-| RF013 | A galeria abre com as fotos aprovadas da equipe de quem está consultando. Os filtros de equipe e dia podem ser combinados, inclusive para ver todas as equipes. | 7 |
-| RF014 | Ao editar um registro, o autor encontra a foto e os dados já preenchidos. Pode alterar os campos sem reenviar a imagem. A versão editada volta à curadoria antes de ser exibida. | 8 |
-| RF015 | O autor pode excluir seus registros, e a administração pode retirar conteúdo. A galeria, o mapa e os percursos devem refletir a retirada. | 8 |
+| RNF007 | O sistema deverá proteger as fotografias originais, informações pessoais e dados de localização precisa, permitindo seu acesso somente a usuários e serviços autorizados. Os arquivos derivados destinados à exibição deverão ter seus metadados EXIF removidos, preservando apenas as informações necessárias ao funcionamento do Atlas. | Privacidade |
+| RNF008 | O compartilhamento de informações com serviços externos, incluindo provedores de inteligência artificial, deverá limitar-se aos dados necessários para a operação solicitada, respeitando as permissões de acesso e as condições de privacidade estabelecidas para o conteúdo. As exportações e os percursos deverão respeitar as mesmas restrições de divulgação aplicadas aos registros de origem. | Privacidade |
 
-### Curadoria dos capitães
+##### 1.4.2.4 Usabilidade e Acessibilidade
 
-| Código | Regra | Pág. |
+| ID | Descrição | Categoria |
 | --- | --- | --- |
-| RF016 | As fotos enviadas por estudantes e servidores vão para a fila de revisão do capitão da respectiva equipe. | 8 |
-| RF017 | O capitão revisa a imagem e os dados do registro, incluindo tema e reflexão quando o autor os tiver preenchido. | 8 |
-| RF018 | A aprovação torna o registro visível a quem tem acesso ao atlas. A foto enviada pelo próprio capitão recebe aprovação automática no primeiro envio. | 8 |
-| RF019 | Ao recusar um registro, o capitão escreve uma justificativa que o autor pode consultar. | 8 |
-| RF020 | Depois que o autor corrige o registro, o capitão recebe a nova versão e decide se ela pode entrar no atlas. | 8 |
+| RNF009 | A interface deverá ser responsiva, permitindo a utilização das funcionalidades principais em computadores, tablets e dispositivos móveis, sem comprometer a visualização e a navegação. | Usabilidade |
+| RNF010 | A interface deverá oferecer recursos básicos de acessibilidade, incluindo identificação dos campos de formulário, indicação visual de foco, navegação por teclado e mensagens de erro associadas aos campos correspondentes. As informações apresentadas no mapa também deverão possuir uma alternativa de consulta em formato de lista, e os estados do sistema não deverão depender exclusivamente da utilização de cores. | Acessibilidade |
 
-### Olhares sobre Santos
+##### 1.4.2.5 Integridade e Consistência dos Dados
 
-| Código | Regra | Pág. |
+| ID | Descrição | Categoria |
 | --- | --- | --- |
-| RF021 | No formulário de envio, o autor pode escrever uma reflexão. O texto fica vinculado à fotografia que motivou o relato. | 9 |
-| RF022 | A administração cadastra, edita e disponibiliza temas e perguntas para orientar as reflexões. | 9 |
-| RF023 | A IA sugere descrições com base no que aparece na foto. Quando há uma reflexão aprovada, ela também serve de referência. | 9 |
-| RF024 | Cada sugestão traz a indicação de que foi gerada por IA. O texto distingue detalhes visíveis de interpretações incertas. | 9 |
-| RF025 | O usuário pode escolher, editar ou descartar a sugestão. Antes da exibição, o capitão revisa o texto escolhido junto com a foto. | 9 |
+| RNF011 | O sistema deverá preservar a integridade dos registros de fotografias e de suas informações associadas, garantindo que alterações, exclusões e novas aprovações sejam refletidas corretamente nas informações disponibilizadas no Atlas. Conteúdos que dependam de registros alterados ou retirados, como descrições geradas por inteligência artificial e percursos estimados, deverão ser atualizados ou invalidados para impedir a apresentação de informações desatualizadas. | Integridade |
 
-### Reconstrução dos percursos
+##### 1.4.2.6 Confiabilidade e Recuperação de Operações
 
-| Código | Regra | Pág. |
+| ID | Descrição | Categoria |
 | --- | --- | --- |
-| RF026 | Para cada equipe e dia, o backend ordena as fotos aprovadas e localizadas pelo horário de captura. A partir desses pontos, calcula automaticamente um caminho provável a pé pelas ruas. | 10 |
-| RF027 | Para o dia escolhido, é possível ver o trajeto de uma equipe ou comparar os trajetos de todas no mesmo mapa. | 10 |
-| RF028 | Quando há poucos pontos para estimar um caminho, o mapa continua mostrando os marcadores e as fotos disponíveis. | 10 |
+| RNF012 | O sistema deverá tratar falhas durante o processamento de fotografias, geração de descrições por inteligência artificial, reconstrução de percursos e exportação de arquivos, permitindo a recuperação ou nova tentativa das operações sem provocar perda dos registros já enviados ou apresentar resultados como concluídos quando houver falha. A indisponibilidade de serviços externos não deverá impedir o funcionamento das funcionalidades que não dependam deles. | Confiabilidade |
 
-### Conclusão coletiva da viagem
+##### 1.4.2.7 Segurança de Arquivos e Conteúdos
 
-| Código | Regra | Pág. |
+| ID | Descrição | Categoria |
 | --- | --- | --- |
-| RF029 | A conclusão coletiva usa exclusivamente reflexões aprovadas de participantes e capitães. | 10 |
-| RF030 | A IA relaciona os relatos a ideias que possam ser conferidas em *Sonho Manifesto*, de Sidarta Ribeiro. O texto preserva o sentido dos relatos. Se houver poucas contribuições, deve evitar generalizações sobre o grupo. | 10–11 |
-| RF031 | A administração lê a conclusão, pode editar o texto e aprova a versão que será publicada. | 11 |
-| RF032 | Participantes e capitães encontram a conclusão aprovada em uma página própria do Atlas. | 11 |
+| RNF013 | O sistema deverá validar os arquivos enviados pelos usuários, verificando seu formato, tamanho e características necessárias ao processamento, recusando arquivos inválidos ou incompatíveis. Os conteúdos textuais e visuais enviados pelos participantes deverão ser tratados como dados, não podendo executar códigos ou alterar instruções e permissões internas do sistema. | Segurança |
 
-### Exportações
+##### 1.4.2.8 Integrações e Serviços Externos
 
-PDF e PNG têm prioridade. Na sequência entram HTML e GeoJSON. O HTML aparece na visão geral da especificação (§1.1, p. 4), e a equipe ainda precisa definir o conteúdo e a navegação desse arquivo.
-
-| Código | Regra | Pág. |
+| ID | Descrição | Categoria |
 | --- | --- | --- |
-| RF033 | O PDF identifica a equipe e o dia e traz mapa, legenda e créditos. Também pode incluir fotos selecionadas e textos aprovados. | 11 |
-| RF034 | O PNG reproduz a visualização filtrada do mapa, com marcadores e percursos legíveis na imagem exportada. | 11 |
-| RF035 | O GeoJSON identifica os pontos fotográficos e os trechos reconstruídos, deixando claro que o percurso é estimado. Cada coordenada segue a ordem longitude, latitude. | 11 |
-| RF036 | O sistema confere as permissões ao gerar e ao disponibilizar a exportação. O arquivo exclui campos privados, EXIF bruto e credenciais, e respeita a precisão de localização autorizada. | 11–12 |
+| RNF014 | Os serviços externos utilizados pelo sistema, incluindo provedores de mapas, roteamento e inteligência artificial, deverão respeitar suas respectivas condições de uso e atribuição. Os mapas e arquivos exportados deverão apresentar os créditos cartográficos exigidos pelos provedores utilizados. | Interoperabilidade |
 
-## Requisitos de qualidade e operação
+##### 1.4.2.9 Implantação e Manutenibilidade
 
-### Capacidade e continuidade
-
-| Código | O que a equipe precisa garantir | Pág. |
+| ID | Descrição | Categoria |
 | --- | --- | --- |
-| RNF001 | O Atlas deve atender aos 95 participantes ao mesmo tempo. O teste de carga precisa combinar consultas e contribuições, como ocorreria durante o uso pela turma. | 12 |
-| RNF002 | Com a cota padrão, o acervo pode chegar a cerca de 1.900 fotos. É com esse volume que a equipe deve testar armazenamento, filtros, mapa e galeria. | 12 |
-| RNF003 | As pessoas devem conseguir navegar enquanto o sistema processa imagens, executa tarefas de IA, calcula percursos ou gera exportações. A fila já existe. Falta testar essas quatro operações durante a consulta ao atlas. | 12 |
-| RNF011 | Edições, exclusões e aprovações devem atualizar o acervo. Resultados que dependem de uma versão antiga precisam ser atualizados ou invalidados. | 13 |
-| RNF012 | Se uma operação falhar, deve ser possível tentar novamente sem perder o registro. A indisponibilidade de um provedor deve preservar as consultas que independem dele. | 14 |
+| RNF015 | A aplicação deverá ser hospedada na plataforma Railway, utilizando configurações específicas para os ambientes de desenvolvimento, homologação e produção. | Manutenibilidade |
+| RNF016 | O sistema deverá documentar os endpoints e os contratos de sua API, padronizando as respostas de erro para facilitar a identificação e a manutenção de problemas. As mensagens apresentadas aos usuários não deverão expor informações técnicas sensíveis, como detalhes internos do servidor ou rastros de execução. | Manutenibilidade |
 
-### Acesso, privacidade e uso dos dados
+##### 1.4.2.10 Backup e Recuperação dos Dados
 
-| Código | O que a equipe precisa garantir | Pág. |
+| ID | Descrição | Categoria |
 | --- | --- | --- |
-| RNF004 | O acesso em produção usa HTTPS. A proteção da sessão deve ser verificada no ambiente publicado quando o login estiver disponível. | 12 |
-| RNF005 | O servidor confere a permissão em cada recurso. Os testes devem cobrir os três perfis, inclusive tentativas de alterar ou retirar conteúdo. | 12 |
-| RNF006 | O sistema guarda as credenciais com segurança, mantém os segredos do servidor fora do navegador e invalida a sessão quando o usuário sai ou o acesso é revogado. | 12 |
-| RNF007 | O acesso aos originais, aos dados pessoais e às coordenadas precisas é restrito. As cópias exibidas devem ter todos os metadados EXIF removidos. | 13 |
-| RNF008 | Os serviços externos recebem apenas os dados necessários e autorizados. As restrições de uso da fonte também valem para percursos e exportações. | 13 |
-| RNF013 | O servidor valida formato, tamanho e características do arquivo enviado. Textos e imagens dos participantes são tratados como conteúdo a analisar, inclusive quando chegam à IA. | 14 |
-| RNF014 | Mapas e arquivos exportados exibem os créditos exigidos. O uso dos dados e dos serviços segue os termos de cada provedor. | 14 |
+| RNF017 | O sistema deverá possuir mecanismos de backup e recuperação do banco de dados e dos arquivos armazenados, considerando a necessidade de proteger ambos os componentes. O procedimento de restauração deverá preservar os vínculos entre os registros e os arquivos correspondentes, respeitando também as exclusões e retiradas de conteúdo realizadas no Atlas. | Confiabilidade |
 
-### Dispositivos e acessibilidade
+##### 1.4.2.11 Ferramentas
 
-| Código | O que a equipe precisa garantir | Pág. |
+| ID | Descrição | Categoria |
 | --- | --- | --- |
-| RNF009 | Os fluxos principais devem funcionar em computador, tablet e celular. Cada fluxo precisa ser testado nos três formatos à medida que for entregue. | 13 |
-| RNF010 | Os campos têm rótulos, os erros indicam o campo correspondente e o foco fica visível ao navegar pelo teclado. Há uma alternativa em lista ao mapa. Os estados da interface também podem ser reconhecidos por sinais além da cor. | 13 |
-
-### Tecnologia e manutenção
-
-| Código | O que a equipe precisa garantir | Pág. |
-| --- | --- | --- |
-| RNF015 | Desenvolvimento, homologação e produção têm configurações próprias no Railway. A equipe precisa verificar a implantação em cada ambiente. | 14 |
-| RNF016 | A API publica seu contrato OpenAPI em `/openapi.json`. Cada nova operação deve documentar as respostas e usar mensagens de erro consistentes, que possam ser mostradas sem expor dados internos. | 14–15 |
-| RNF017 | A restauração de um backup deve recuperar o PostgreSQL e os arquivos correspondentes, preservar os vínculos entre eles e respeitar as retiradas de conteúdo. A equipe precisa testar essa recuperação conjunta. | 15 |
-| RNF018 | O backend usa Python e FastAPI. [Código da API](../../backend/app/main.py) | 15 |
-| RNF019 | A interface usa React com JavaScript/JSX, Vite e Tailwind CSS. [Dependências do frontend](../../frontend/package.json) | 15 |
-| RNF020 | Os dados ficam no PostgreSQL, com SQLAlchemy e migrações Alembic. A tabela de tarefas já existe. Ainda faltam as tabelas e os testes de participantes, fotos e curadoria. | 15 |
-| RNF021 | Fotos e arquivos gerados ficam no Railway Buckets, com interface compatível com S3. O código já define as operações de armazenamento. Falta testá-las em um bucket autorizado. | 15 |
-| RNF022 | Na hospedagem no Railway, a equipe verifica se os ambientes estão isolados entre si, inclusive o de homologação previsto em RNF015. | 15 |
-| RNF023 | O mapa usa Mapbox GL JS e deck.gl. As dependências e a configuração do token público já existem. Falta exibir os pontos e os percursos e conferir a visualização com as permissões de cada perfil. | 15 |
-| RNF024 | O backend consulta um serviço de roteamento a pé para estimar os caminhos. A interface de integração já está definida e ainda precisa ser conectada ao provedor. | 15 |
-| RNF025 | O backend integra o serviço de IA usado nas descrições das fotos e na conclusão coletiva. A interface está definida e os dois fluxos ainda precisam ser testados com o provedor. | 16 |
-
-## Decisões em aberto
-
-- **Foto do capitão.** A aprovação automática vale para o primeiro envio (RF018). Quem revisa uma edição posterior da própria foto do capitão, inclusive se ele alterar a descrição sugerida pela IA (RF014 e RF025)?
-- **Cota individual.** A administração pode ajustar o padrão de 20 fotos por pessoa em cada atlas. Quando uma recusa ou retirada libera uma vaga? Como aplicar uma mudança de limite a quem já enviou fotos? Dois envios simultâneos precisam respeitar a mesma cota.
-- **Visibilidade e precisão.** Quem pode consultar e exportar cada atlas? Até que precisão o mapa e os arquivos podem mostrar a localização para cada público?
-- **Operação.** Faltam definir os limites dos arquivos, os provedores de IA e roteamento, os prazos de retenção e o procedimento de recuperação, incluindo quanto tempo e quanta perda de dados são aceitáveis.
-- **Revisão pedagógica.** Que critérios a equipe vai usar para avaliar se há relatos suficientes para uma conclusão coletiva e se a relação com o livro é fiel ao texto?
-- **Exportação HTML.** Quais elementos do atlas o arquivo deve incluir e como a pessoa vai navegar por eles?
-
-<details>
-<summary>Documento de referência</summary>
-
-*Especificação de requisitos — Atlas Santos*, 16 páginas. A equipe recebeu o arquivo `Atlas_Santos_Requisitos_do_Sistema_v1_3.pdf`. A capa indica versão 1.2 e o histórico de revisões termina em 1.1. A numeração e as páginas desta matriz seguem as tabelas desse arquivo.
-
-SHA-256 do PDF: `8d5e0aae732cbdb02432af905007a17528e608a87746bcedf6640eb0b594ecc3`.
-
-</details>
+| RNF018 | O backend do sistema deverá ser desenvolvido utilizando a linguagem Python e o framework FastAPI, responsáveis pela implementação da API e da lógica de negócio. | Tecnologia |
+| RNF019 | A interface do sistema deverá ser desenvolvida utilizando a biblioteca React, com Vite como ferramenta de construção e gerenciamento do frontend, e Tailwind CSS para a estilização dos componentes. | Tecnologia |
+| RNF020 | O banco de dados utilizado para o armazenamento persistente das informações deverá ser o PostgreSQL, com SQLAlchemy para o mapeamento objeto-relacional e Alembic para o gerenciamento das migrações. | Tecnologia |
+| RNF021 | O armazenamento das fotografias e dos arquivos gerados pelo sistema deverá utilizar Railway Buckets, por meio de uma integração compatível com o padrão S3. | Tecnologia |
+| RNF022 | A aplicação deverá ser hospedada na plataforma Railway, utilizando configurações específicas para os ambientes de desenvolvimento e produção. | Tecnologia |
+| RNF023 | A cartografia do sistema deverá utilizar Mapbox como provedor de mapas e deck.gl para a renderização e visualização dos dados geográficos, incluindo os pontos e os percursos reconstruídos. | Tecnologia |
+| RNF024 | A reconstrução dos percursos deverá utilizar um serviço de roteamento adequado para trajetos a pé, integrado ao sistema por meio do backend. | Tecnologia |
+| RNF025 | A geração de sugestões de descrição das fotografias e a elaboração da conclusão da viagem deverão utilizar um serviço de inteligência artificial integrado ao backend. | Tecnologia |
