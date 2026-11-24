@@ -1,13 +1,18 @@
 import React from "react";
-import { config } from "../../lib/config";
+import logo from "../../assets/atlas-santos.png";
 
 export function Header() {
   return (
-    <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
-        <h1 className="text-xl font-semibold text-slate-900">{config.appTitle}</h1>
-        <p className="text-sm text-slate-600">Estudo do Meio 2026</p>
-      </div>
+    <header className="landing-header">
+      <a href="/" aria-label="Atlas Santos — início">
+        <img src={logo} alt="Atlas Santos" />
+      </a>
+      <nav aria-label="Navegação principal">
+        <a href="#estudo">O projeto</a>
+        <a className="landing-login" href="/login">
+          Entrar <span aria-hidden="true">↗</span>
+        </a>
+      </nav>
     </header>
   );
 }

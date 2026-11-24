@@ -1,12 +1,18 @@
 import React from "react";
-import { config } from "../../lib/config";
 
 export function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white">
-      <div className="mx-auto max-w-4xl px-4 py-4 text-sm text-slate-600 sm:px-6">
-        IFSP Campus Araraquara · {config.appTitle} v{config.appVersion}
-      </div>
+    <footer className="landing-footer">
+      <strong>Atlas Santos</strong>
+      <span>IFSP · Campus Araraquara</span>
+      <details>
+        <summary>Créditos fotográficos</summary>
+        <p>
+          Vista aérea de Santos, Agência CNT (2012). Fotografia com recorte de exibição.{" "}
+          <a href="https://www.flickr.com/photos/51889924@N04/8866575201">Original</a> ·{" "}
+          <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>.
+        </p>
+      </details>
     </footer>
   );
 }

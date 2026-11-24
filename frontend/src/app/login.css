@@ -1,0 +1,231 @@
+.atlas-access {
+  --ink: #173b4b;
+  --green: #28695d;
+  --line: #d5ded8;
+  min-height: 100svh;
+  padding: 0 clamp(20px, 5vw, 80px);
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+  background: #f5f2ea;
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+.access-header,
+.access-spread,
+.access-footer {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+.access-header,
+.access-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.access-header {
+  padding: 20px 0;
+}
+.access-header img {
+  width: 120px;
+}
+.access-back,
+.access-link {
+  color: var(--green);
+  font-weight: 650;
+  font-size: 0.875rem;
+}
+.access-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+}
+.access-back:hover,
+.access-link:hover {
+  text-decoration: underline;
+}
+.access-spread {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.access-photo {
+  position: relative;
+  min-height: 540px;
+  background: #173b4b;
+}
+.access-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 68%;
+}
+.access-photo figcaption {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 120px clamp(24px, 3.8vw, 60px) 42px;
+  background: linear-gradient(transparent, rgba(9, 31, 38, 0.92));
+  color: white;
+}
+.access-photo figcaption span {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.access-photo figcaption strong {
+  display: block;
+  font:
+    500 clamp(2.15rem, 4vw, 3.65rem)/1.15 Georgia,
+    serif;
+  margin: 9px 0;
+}
+.access-photo figcaption small {
+  font-size: 0.9rem;
+}
+.access-panel {
+  display: grid;
+  place-items: center;
+  padding: 48px clamp(24px, 4vw, 72px);
+}
+.access-content {
+  width: 100%;
+  max-width: 382px;
+}
+.access-content h1 {
+  font:
+    700 clamp(1.9rem, 3.4vw, 2.8rem)/1.1 "Manrope",
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.045em;
+}
+.access-intro {
+  margin: 14px 0 30px;
+  color: #53676c;
+  line-height: 1.6;
+}
+.access-content label {
+  display: block;
+  margin: 18px 0 7px;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+.access-content input {
+  width: 100%;
+  height: 50px;
+  padding: 0 14px;
+  color: var(--ink);
+  background: white;
+  border: 1px solid #aabbb5;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+.access-content input::placeholder {
+  color: #68777d;
+}
+.atlas-access :focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 3px;
+}
+.access-password {
+  position: relative;
+}
+.access-password input {
+  padding-right: 82px;
+}
+.access-password button {
+  position: absolute;
+  inset: 4px 5px 4px auto;
+  padding: 0 10px;
+  color: var(--green);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+.access-link {
+  display: block;
+  margin: 9px 0 0 auto;
+  padding: 6px 0;
+}
+.access-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--green);
+  color: white;
+  font-weight: 700;
+}
+.access-submit:hover {
+  background: #20564d;
+}
+.access-content input[aria-invalid="true"] {
+  border-color: #a14538;
+}
+.access-error {
+  margin-top: 6px;
+  color: #91392d;
+  font-size: 0.85rem;
+}
+.access-notice:not(:empty) {
+  margin-top: 16px;
+  padding: 12px;
+  background: #edf4ef;
+  border-left: 3px solid var(--green);
+  font-size: 0.9rem;
+}
+.access-footer {
+  padding: 20px 0;
+  font-size: 0.78rem;
+  color: #53676c;
+}
+@media (max-width: 760px) {
+  .access-header {
+    padding: 12px 0;
+  }
+  .access-header img {
+    width: 100px;
+  }
+  .access-spread {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+  }
+  .access-photo {
+    min-height: 150px;
+  }
+  .access-photo img {
+    object-position: center 76%;
+  }
+  .access-photo figcaption {
+    padding: 22px;
+  }
+  .access-photo figcaption strong {
+    font-size: 1.65rem;
+    margin: 3px 0;
+  }
+  .access-photo figcaption small {
+    display: none;
+  }
+  .access-panel {
+    padding: 32px 20px;
+  }
+  .access-intro {
+    margin-bottom: 22px;
+  }
+  .access-footer {
+    flex-wrap: wrap;
+  }
+}
