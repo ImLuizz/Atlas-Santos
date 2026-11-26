@@ -25,7 +25,7 @@ it("valida as credenciais localmente e permite conferir a senha", () => {
   fireEvent.click(screen.getByRole("button", { name: "Mostrar senha" }));
   expect(password).toHaveAttribute("type", "text");
   fireEvent.click(enter);
-  expect(screen.getByRole("status")).toHaveTextContent("em breve");
+  expect(screen.getByRole("status")).toHaveTextContent("E-mail ou senha incorretos");
   expect(request).not.toHaveBeenCalled();
 });
 

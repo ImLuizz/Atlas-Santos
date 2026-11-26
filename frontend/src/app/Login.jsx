@@ -1,9 +1,10 @@
 import React, { useRef, useState } from "react";
 import logo from "../assets/atlas-santos.png";
 import centro from "../assets/centro-santos.jpg";
+import { demoAccounts, demoPassword } from "../lib/demo-access";
 import "./login.css";
 
-export function Login() {
+export function Login({ onDemoLogin }) {
   const [recovering, setRecovering] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
@@ -30,11 +31,23 @@ export function Login() {
       (issues.email ? email : password).current.focus();
       return;
     }
-    setNotice(
-      recovering
-        ? "A recuperação de senha estará disponível quando o acesso às contas for ativado."
-        : "O acesso às contas estará disponível em breve."
-    );
+    if (recovering) {
+      setNotice(
+        "A recuperação de senha estará disponível quando o acesso às contas for ativado."
+      );
+      return;
+    }
+    if (demoAccounts.length) {
+      const address = email.current.value.trim().toLowerCase();
+      const entry = demoAccounts.find((account) => account.email === address);
+      if (entry && password.current.value === demoPassword) {
+        onDemoLogin(entry);
+        return;
+      }
+      setNotice("E-mail ou senha incorretos.");
+    } else {
+      setNotice("O acesso às contas estará disponível em breve.");
+    }
     if (password.current) password.current.value = "";
   }
 
@@ -74,7 +87,7 @@ export function Login() {
             <p className="access-intro">
               {recovering
                 ? "Informe o e-mail cadastrado na sua conta."
-                : "Use as credenciais que você recebeu por e-mail."}
+                : "Entre com seu e-mail e senha para acessar o atlas da equipe."}
             </p>
             <form noValidate onSubmit={submit} onChange={clearFeedback}>
               <label htmlFor="atlas-email">E-mail</label>

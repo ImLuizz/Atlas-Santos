@@ -1,15 +1,46 @@
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { Header } from "../components/layout/Header";
 import { Footer } from "../components/layout/Footer";
 import { apiFetch } from "../lib/api-client";
 import { Login } from "./Login";
+import { demoAccounts, demoSessionKey } from "../lib/demo-access";
 import vista from "../assets/santos-aerea.jpg";
 import centro from "../assets/centro-santos.jpg";
 import "./landing.css";
 
+const Atlas = lazy(() => import("./Atlas"));
+
 export function App() {
-  if (["/login", "/login/"].includes(window.location.pathname)) return <Login />;
+  if (/^\/(login|mapa)\/?$/.test(window.location.pathname)) return <Access />;
   return <Home />;
+}
+
+function Access() {
+  const [account, setAccount] = useState(() =>
+    demoAccounts.find((entry) => entry.email === sessionStorage.getItem(demoSessionKey))
+  );
+
+  useEffect(() => {
+    const url = account ? "/mapa" : "/login";
+    if (window.location.pathname !== url) window.history.replaceState(null, "", url);
+  }, [account]);
+
+  function enter(entry) {
+    sessionStorage.setItem(demoSessionKey, entry.email);
+    setAccount(entry);
+  }
+
+  function leave() {
+    sessionStorage.removeItem(demoSessionKey);
+    setAccount(null);
+  }
+
+  if (!account) return <Login onDemoLogin={enter} />;
+  return (
+    <Suspense fallback={<p role="status">Abrindo o atlas…</p>}>
+      <Atlas account={account} onLogout={leave} />
+    </Suspense>
+  );
 }
 
 function Home() {

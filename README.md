@@ -12,7 +12,18 @@ De 5 a 11 de outubro de 2026, **83 estudantes e 12 servidores do IFSP Campus Ara
 
 A proposta é que estudantes e servidores escolham suas fotos e possam escrever sobre elas no **Olhares sobre Santos**. Os capitães revisam os registros de suas equipes. No mapa, cada fotografia com localização ajuda a reconstruir um trecho provável do percurso a pé.
 
-Hoje, a página inicial já consulta a API e confirma a conexão com o banco. A galeria, o envio de fotos, a curadoria e os mapas são as próximas funcionalidades previstas.
+### Fases do desenvolvimento
+
+| Fase | Entrega | Critério de conclusão |
+| --- | --- | --- |
+| 1 · Acesso local e mapa 3D | Primeira tela do atlas da equipe | Os três perfis locais conseguem entrar, explorar Santos com edifícios em 3D, restaurar a vista inicial e sair. |
+| 2 · Participantes e equipes | Pré-cadastro do IF-Arbitra, vínculo com equipes e autenticação na API | Cada participante acessa os dados autorizados para seu perfil e equipe. |
+| 3 · Acervo e curadoria | Envio de fotos, cotas, EXIF, localização e revisão pelo capitão | O participante acompanha a revisão. A galeria exibe os registros aprovados para aquele público. |
+| 4 · Fotografias e percursos no mapa | Marcadores e rotas a pé por equipe e dia, renderizados com deck.gl | O mapa apresenta as fotos autorizadas em ordem cronológica e os caminhos estimados. Retirar uma foto atualiza o percurso. |
+| 5 · Olhares sobre Santos | Reflexões opcionais por tema, descrições assistidas por IA e síntese da viagem | A equipe revisa as descrições e a síntese antes de incorporá-las ao atlas. |
+| 6 · Exportações e publicação | PDF e PNG, seguidos de HTML e GeoJSON, com homologação e deploy | As exportações respeitam os filtros e as permissões. A equipe valida a recuperação de backup e o funcionamento em produção. |
+
+**Etapa atual para revisão local:** fase 1.
 
 ## Equipe
 
@@ -30,6 +41,10 @@ docker compose up --build
 ```
 
 Na primeira execução, o Docker baixa as dependências, inicia o PostgreSQL e aplica as migrações. Quando o Vite estiver pronto, abra a [página local](http://localhost:5173). Se aparecer **“Serviço disponível.”**, a página conseguiu consultar a API e a API conseguiu acessar o banco.
+
+Para abrir o mapa 3D, configure `VITE_MAPBOX_ACCESS_TOKEN` com seu token público do Mapbox em `frontend/.env.local`. Com Docker, execute `docker compose --env-file frontend/.env.local up --build`. Se usar o Vite diretamente, ele lê esse arquivo ao iniciar.
+
+Na [tela de acesso local](http://localhost:5173/login), use `ana@atlas.test` (estudante), `marina@atlas.test` (capitã) ou `caio@atlas.test` (servidor). A senha dos três perfis é `Santos2026!`. As contas funcionam apenas em desenvolvimento.
 
 | Componente | Onde trabalhar |
 | --- | --- |

@@ -46,6 +46,8 @@ services:
     command: python -m app.worker.main
 
   frontend:
+    environment:
+      VITE_MAPBOX_ACCESS_TOKEN: ${VITE_MAPBOX_ACCESS_TOKEN:-}
     build:
       context: ./frontend
       dockerfile_inline: |
