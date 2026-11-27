@@ -5,6 +5,8 @@ x-backend: &backend
   working_dir: /app
   environment:
     DATABASE_URL: postgresql+psycopg://atlas:atlas@db:5432/atlas
+    ENVIRONMENT: development
+    COOKIE_SECURE: "false"
     PYTHONDONTWRITEBYTECODE: "1"
   volumes:
     - ./backend:/app:ro
@@ -29,7 +31,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --reload"
+    command: sh -c "alembic upgrade head && python -m app.modules.auth.seed && exec uvicorn app.main:app --host 0.0.0.0 --reload"
     ports:
       - "127.0.0.1:8000:8000"
     healthcheck:
@@ -47,6 +49,7 @@ services:
 
   frontend:
     environment:
+      ATLAS_API_ORIGIN: http://api:8000
       VITE_MAPBOX_ACCESS_TOKEN: ${VITE_MAPBOX_ACCESS_TOKEN:-}
     build:
       context: ./frontend

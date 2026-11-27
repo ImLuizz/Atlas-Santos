@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,7 +14,7 @@ class Settings(BaseSettings):
     )
 
     # General
-    ENVIRONMENT: str = Field(default="development")
+    ENVIRONMENT: str = Field(default="production")
     DEBUG: bool = Field(default=True)
     APP_NAME: str = Field(default="Atlas Santos API")
     APP_VERSION: str = Field(default="0.1.0")
@@ -21,9 +23,9 @@ class Settings(BaseSettings):
 
     # Security
     SECRET_KEY: SecretStr | None = None
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=1440)
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=1440, gt=0)
     COOKIE_SECURE: bool = Field(default=True)
-    COOKIE_SAMESITE: str = Field(default="lax")
+    COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
 
     # Database
     DATABASE_URL: str = Field(
@@ -52,6 +54,10 @@ class Settings(BaseSettings):
     PRESIGNED_UPLOAD_TTL_MINUTES: int = Field(default=10)
     PRESIGNED_DOWNLOAD_TTL_MINUTES: int = Field(default=5)
     JOB_TIMEOUT_SECONDS: int = Field(default=300, gt=0)
+
+    @property
+    def allows_test_accounts(self) -> bool:
+        return self.ENVIRONMENT in {"development", "test", "staging"}
 
     @field_validator("DATABASE_URL")
     @classmethod

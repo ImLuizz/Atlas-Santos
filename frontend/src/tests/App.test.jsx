@@ -17,7 +17,7 @@ describe("Página inicial do Atlas Santos", () => {
 
     expect(screen.getByRole("heading", { name: "Atlas Santos" })).toBeInTheDocument();
     expect(
-      screen.getByText("O acesso aos atlas está em preparação.")
+      screen.getByText("Acesse o atlas da sua equipe com sua conta.")
     ).toBeInTheDocument();
     expect(await screen.findByText("Serviço disponível.")).toBeInTheDocument();
     expect(request).toHaveBeenCalledWith(

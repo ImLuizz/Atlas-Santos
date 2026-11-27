@@ -2,7 +2,7 @@ from collections.abc import AsyncGenerator
 
 import pytest
 from app.core.config import settings
-from app.db.base import Base
+from app.db.metadata import metadata
 from app.db.session import get_db
 from app.main import app
 from httpx import ASGITransport, AsyncClient
@@ -35,10 +35,10 @@ def override_settings():
 @pytest.fixture(autouse=True)
 async def setup_test_db():
     async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(metadata.create_all)
     yield
     async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(metadata.drop_all)
 
 
 @pytest.fixture

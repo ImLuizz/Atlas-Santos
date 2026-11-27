@@ -1,15 +1,10 @@
 import React, { useState } from "react";
-import logo from "../assets/atlas-santos.png";
+import logo from "../../assets/atlas-santos.png";
+import AtlasFilters from "./AtlasFilters";
 import SantosMap from "./SantosMap";
+import { profileLabel, TeamMembers } from "./TeamMembers";
 import "./atlas.css";
 
-const days = [5, 6, 7, 8, 9, 10, 11];
-const themes = [
-  "Memória e ancestralidade",
-  "Cidade e meio ambiente",
-  "Experiências vividas",
-  "Futuros possíveis",
-];
 const icons = {
   map: (
     <>
@@ -64,8 +59,9 @@ function Icon({ name }) {
   );
 }
 
-export default function Atlas({ account, onLogout }) {
+export default function AtlasPage({ account, onLogout, leaving, onSessionExpired }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showMembers, setShowMembers] = useState(false);
   const [day, setDay] = useState("");
   const [theme, setTheme] = useState("");
   return (
@@ -102,8 +98,14 @@ export default function Atlas({ account, onLogout }) {
               <Icon name="upload" />
               Minhas fotos
             </button>
-            {account.role === "Capitã" && (
-              <button disabled>
+            {account.role === "capitao" && (
+              <button
+                aria-expanded={showMembers}
+                onClick={() => {
+                  setShowMembers(!showMembers);
+                  setMenuOpen(false);
+                }}
+              >
                 <Icon name="users" />
                 Gestão do grupo
               </button>
@@ -118,21 +120,26 @@ export default function Atlas({ account, onLogout }) {
             </span>
             <div>
               <strong>{account.name}</strong>
-              <small>{account.role} · Equipe Santos</small>
+              <small>
+                {profileLabel(account)} · {account.team.name}
+              </small>
             </div>
-            <button onClick={onLogout}>Sair</button>
+            <button onClick={onLogout} disabled={leaving}>
+              {leaving ? "Saindo…" : "Sair"}
+            </button>
           </div>
         </div>
       </aside>
       <main className="atlas-main">
         <div className="atlas-scope">
-          Equipe <strong>Equipe Santos</strong>
-          <span aria-hidden="true">/</span> Atlas <strong>Atlas Santos 2026</strong>
+          Equipe <strong>{account.team.name}</strong>
+          <span aria-hidden="true">/</span> Atlas{" "}
+          <strong>{account.team.atlas_name}</strong>
         </div>
         <header className="atlas-heading">
           <div>
             <p className="atlas-eyebrow">Atlas da equipe</p>
-            <h1 id="atlas-title">Atlas Santos 2026</h1>
+            <h1 id="atlas-title">{account.team.atlas_name}</h1>
             <p>Percursos do estudo do meio em Santos.</p>
           </div>
           <button className="atlas-export" disabled>
@@ -140,6 +147,9 @@ export default function Atlas({ account, onLogout }) {
             Exportar
           </button>
         </header>
+        {showMembers && (
+          <TeamMembers team={account.team} onSessionExpired={onSessionExpired} />
+        )}
         <div className="atlas-stats">
           <span>
             <strong>1</strong> equipe
@@ -148,7 +158,7 @@ export default function Atlas({ account, onLogout }) {
             <strong>0</strong> registros no filtro
           </span>
           <span>
-            <strong>Equipe Santos</strong> equipe responsável
+            <strong>{account.team.name}</strong> equipe responsável
           </span>
         </div>
         <div className="atlas-toolbar">
@@ -157,33 +167,12 @@ export default function Atlas({ account, onLogout }) {
             <button disabled>Galeria</button>
             <button disabled>Equipes</button>
           </div>
-          <div className="atlas-filters">
-            <select aria-label="Filtrar por equipe" disabled>
-              <option>Equipe atual</option>
-            </select>
-            <select
-              aria-label="Filtrar por dia"
-              value={day}
-              onChange={(e) => setDay(e.target.value)}
-            >
-              <option value="">Todos os dias</option>
-              {days.map((d) => (
-                <option value={d} key={d}>
-                  {d} de outubro
-                </option>
-              ))}
-            </select>
-            <select
-              aria-label="Filtrar por olhar"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
-            >
-              <option value="">Todos os olhares</option>
-              {themes.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
-          </div>
+          <AtlasFilters
+            day={day}
+            theme={theme}
+            onDayChange={setDay}
+            onThemeChange={setTheme}
+          />
         </div>
         <SantosMap />
       </main>

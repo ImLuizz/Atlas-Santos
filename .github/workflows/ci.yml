@@ -19,6 +19,16 @@ jobs:
           curl -fsS http://localhost:5173/ | grep -i 'Atlas Santos'
           curl -fsS http://localhost:8000/api/v1/health | jq -e '.status == "healthy" and .database == "connected"'
           docker compose exec -T worker python -m app.worker.main --single-pass
+      - name: Conferir sessão pelo proxy da interface
+        run: |
+          auth=http://localhost:5173/api/v1/auth
+          jar="$(mktemp)"
+          curl -fsS -c "$jar" -H 'Content-Type: application/json' -H 'X-Atlas-Request: 1' \
+            -d '{"email":"caio@atlas.test","password":"Santos2026!"}' "$auth/login" \
+            | jq -e '.role == "participante" and .participant_kind == "servidor"'
+          curl -fsS -b "$jar" "$auth/me" | jq -e '.team.name == "Orla"'
+          curl -fsS -X POST -b "$jar" -H 'X-Atlas-Request: 1' "$auth/logout" | jq -e '.ok'
+          test "$(curl -s -o /dev/null -w '%{http_code}' -b "$jar" "$auth/me")" = 401
       - if: failure()
         run: docker compose logs
 

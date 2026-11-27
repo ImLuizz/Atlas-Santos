@@ -61,6 +61,24 @@
   border-radius: 2px;
   margin-left: auto;
 }
+.atlas-rail nav button:not(:disabled) {
+  color: white;
+}
+.atlas-members {
+  margin-top: 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  padding: 16px 20px;
+}
+.atlas-members h2 {
+  font-weight: 650;
+  margin-bottom: 8px;
+}
+.atlas-members li {
+  font-size: 14px;
+  padding: 3px 0;
+}
 .atlas-rail nav button {
   color: #9aaeb4;
 }

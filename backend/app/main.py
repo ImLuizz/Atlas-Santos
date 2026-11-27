@@ -6,8 +6,11 @@ from app.api.v1.endpoints import health as health_endpoint
 from app.api.v1.router import api_v1_router
 from app.core.config import settings
 from app.core.logging import setup_logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +40,20 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json" if settings.DEBUG else None,
         lifespan=lifespan,
     )
+
+    @app.exception_handler(RequestValidationError)
+    async def invalid_input(request: Request, exc: RequestValidationError):
+        if request.url.path != "/api/v1/auth/login":
+            return await request_validation_exception_handler(request, exc)
+        # Pydantic includes rejected input values, which may contain a password.
+        return JSONResponse(status_code=422, content={"detail": "Dados inválidos."})
+
+    @app.middleware("http")
+    async def private_responses(request: Request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith(("/api/v1/auth/", "/api/v1/teams/")):
+            response.headers["Cache-Control"] = "private, no-store"
+        return response
 
     # CORS Middleware
     if settings.CORS_ORIGINS:
