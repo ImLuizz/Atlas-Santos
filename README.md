@@ -191,7 +191,7 @@ Atlas-Santos/
 │   ├── package.json
 │   ├── postcss.config.js
 │   ├── tailwind.config.js
-│   ├── vercel.ts
+│   ├── vercel.json
 │   └── vite.config.js
 ├── scripts/
 │   ├── dev-backend.sh
@@ -214,6 +214,6 @@ A **Vercel** hospeda a interface. O **Railway** executa a API e o PostgreSQL. Pa
 1. No ambiente de homologação do Railway, vincule a API a um PostgreSQL próprio via `DATABASE_URL`, configure `ENVIRONMENT=staging`, `COOKIE_SECURE=true` e use `alembic upgrade head` como comando de pré-deploy.
 2. Nesse ambiente, defina uma senha de teste exclusiva em `ATLAS_TEST_ACCOUNT_PASSWORD` (12 a 128 caracteres) e execute uma vez `python -m app.modules.auth.seed`. A API bloqueia o cadastro, o login e as sessões de contas `@atlas.test` em produção.
 3. Na Vercel, defina `ATLAS_API_ORIGIN` para **Preview** com a origem HTTPS dessa API (sem `/api`). Para **Production**, aponte a variável para a API de produção. Mantenha o token público do mapa em `VITE_MAPBOX_ACCESS_TOKEN`.
-4. Abra a prévia em `/mapa` e repita o fluxo dos três perfis. O navegador acessa `/api` no domínio da interface. O proxy encaminha as chamadas ao Railway, mantendo o cookie no domínio da prévia.
+4. Abra a prévia em `/mapa` e repita o fluxo dos três perfis. O navegador acessa `/api` no domínio da interface. A função `frontend/api/railway.js` encaminha as chamadas ao Railway, mantendo o cookie no domínio da prévia.
 
 A revisão Alembic `access2a001` parte da revisão da fila `45e99ca9977f`. Ao reaproveitar os outros módulos de `feature/backend-core`, faça a próxima migração partir de `access2a001` e incluir apenas tabelas e colunas ainda ausentes.
