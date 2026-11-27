@@ -1,22 +1,16 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, it, vi } from "vitest";
-import App from "../app/App";
+import { expect, it, vi } from "vitest";
+import LoginPage from "../features/auth/LoginPage";
 
-afterEach(() => {
-  window.history.replaceState({}, "", "/");
-  vi.unstubAllGlobals();
-});
-
-it("valida as credenciais localmente e permite conferir a senha", () => {
-  const request = vi.fn();
-  vi.stubGlobal("fetch", request);
-  window.history.replaceState({}, "", "/login");
-  render(<App />);
+it("valida os campos, permite conferir a senha e informa a recusa da API", async () => {
+  const login = vi.fn().mockRejectedValue({ status: 401 });
+  render(<LoginPage onLogin={login} />);
   const enter = screen.getByRole("button", { name: "Entrar" });
   fireEvent.click(enter);
   expect(screen.getByLabelText("E-mail")).toHaveFocus();
   expect(screen.getByText("Informe sua senha.")).toBeInTheDocument();
+  expect(login).not.toHaveBeenCalled();
   fireEvent.change(screen.getByLabelText("E-mail"), {
     target: { value: "teste@example.org" },
   });
@@ -25,25 +19,14 @@ it("valida as credenciais localmente e permite conferir a senha", () => {
   fireEvent.click(screen.getByRole("button", { name: "Mostrar senha" }));
   expect(password).toHaveAttribute("type", "text");
   fireEvent.click(enter);
-  expect(screen.getByRole("status")).toHaveTextContent("E-mail ou senha incorretos");
-  expect(request).not.toHaveBeenCalled();
+  expect(await screen.findByText("E-mail ou senha incorretos.")).toBeVisible();
+  expect(password).toHaveValue("");
 });
 
-it("abre a recuperação, valida o e-mail e permite voltar ao login", () => {
-  window.history.replaceState({}, "", "/login/");
-  render(<App />);
+it("orienta a recuperação de acesso sem prometer o envio de e-mail", () => {
+  render(<LoginPage onLogin={vi.fn()} />);
   fireEvent.click(screen.getByText("Esqueci minha senha"));
-  expect(screen.getByRole("heading", { name: "Recuperar senha" })).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("E-mail"), { target: { value: "incompleto" } });
-  fireEvent.click(screen.getByText("Solicitar recuperação"));
-  expect(screen.getByText("Informe um e-mail válido.")).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("E-mail"), {
-    target: { value: "teste@example.org" },
-  });
-  fireEvent.click(screen.getByText("Solicitar recuperação"));
-  expect(screen.getByRole("status")).toHaveTextContent(
-    "quando o acesso às contas for ativado"
-  );
+  expect(screen.getByText(/procure a equipe responsável/)).toBeVisible();
   fireEvent.click(screen.getByText("Voltar ao login"));
   expect(screen.getByLabelText("Senha", { exact: true })).toHaveAttribute(
     "type",

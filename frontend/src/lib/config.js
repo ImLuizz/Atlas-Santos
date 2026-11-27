@@ -3,7 +3,6 @@
  * Reads public Vite environment variables with safe defaults.
  */
 export const config = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
   appTitle: import.meta.env.VITE_APP_TITLE || "Atlas Santos",
   appVersion: import.meta.env.VITE_APP_VERSION || "0.1.0",
   map: {

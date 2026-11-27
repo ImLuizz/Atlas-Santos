@@ -1,140 +1,109 @@
-import React, { lazy, Suspense, useEffect, useState } from "react";
-import { Header } from "../components/layout/Header";
-import { Footer } from "../components/layout/Footer";
+import React, { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import LoginPage from "../features/auth/LoginPage";
+import LandingPage from "../features/landing/LandingPage";
 import { apiFetch } from "../lib/api-client";
-import { Login } from "./Login";
-import { demoAccounts, demoSessionKey } from "../lib/demo-access";
-import vista from "../assets/santos-aerea.jpg";
-import centro from "../assets/centro-santos.jpg";
-import "./landing.css";
 
-const Atlas = lazy(() => import("./Atlas"));
+const AtlasPage = lazy(() => import("../features/atlas/AtlasPage"));
 
 export function App() {
   if (/^\/(login|mapa)\/?$/.test(window.location.pathname)) return <Access />;
-  return <Home />;
+  return <LandingPage />;
 }
 
 function Access() {
-  const [account, setAccount] = useState(() =>
-    demoAccounts.find((entry) => entry.email === sessionStorage.getItem(demoSessionKey))
-  );
+  const [account, setAccount] = useState(null);
+  const [status, setStatus] = useState("checking");
+  const [attempt, setAttempt] = useState(0);
+  const [leaving, setLeaving] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const url = account ? "/mapa" : "/login";
-    if (window.location.pathname !== url) window.history.replaceState(null, "", url);
-  }, [account]);
-
-  function enter(entry) {
-    sessionStorage.setItem(demoSessionKey, entry.email);
-    setAccount(entry);
+  function showAccount(user) {
+    setAccount(user);
+    setStatus("ready");
+    setError("");
+    window.history.replaceState(null, "", user ? "/mapa" : "/login");
   }
 
-  function leave() {
-    sessionStorage.removeItem(demoSessionKey);
-    setAccount(null);
-  }
-
-  if (!account) return <Login onDemoLogin={enter} />;
-  return (
-    <Suspense fallback={<p role="status">Abrindo o atlas…</p>}>
-      <Atlas account={account} onLogout={leave} />
-    </Suspense>
-  );
-}
-
-function Home() {
-  const [serviceStatus, setServiceStatus] = useState("Consultando serviço…");
+  const sessionExpired = useCallback(() => showAccount(null), []);
 
   useEffect(() => {
     const controller = new AbortController();
-    apiFetch("/api/v1/health", { signal: controller.signal })
-      .then((data) => {
-        if (!controller.signal.aborted) {
-          setServiceStatus(
-            data.status === "healthy"
-              ? "Serviço disponível."
-              : "Serviço temporariamente indisponível."
-          );
-        }
+    apiFetch("/api/v1/auth/me", { signal: controller.signal })
+      .then((user) => {
+        if (!controller.signal.aborted) showAccount(user);
       })
-      .catch(() => {
-        if (!controller.signal.aborted) {
-          setServiceStatus("Não foi possível consultar o serviço.");
-        }
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        if (err.status === 401) showAccount(null);
+        else setStatus("unavailable");
       });
+    function restore(event) {
+      if (event.persisted) window.location.reload();
+    }
+    window.addEventListener("pageshow", restore);
+    return () => {
+      controller.abort();
+      window.removeEventListener("pageshow", restore);
+    };
+  }, [attempt]);
 
-    return () => controller.abort();
-  }, []);
+  async function enter(email, password) {
+    const user = await apiFetch("/api/v1/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+    showAccount(user);
+  }
 
-  return (
-    <div className="landing">
-      <Header />
+  async function leave() {
+    setLeaving(true);
+    setError("");
+    try {
+      await apiFetch("/api/v1/auth/logout", { method: "POST" });
+      showAccount(null);
+    } catch {
+      setError("Não foi possível encerrar a sessão. Tente sair novamente.");
+    } finally {
+      setLeaving(false);
+    }
+  }
+
+  if (status === "checking") return <p role="status">Consultando sua sessão…</p>;
+  if (status === "unavailable")
+    return (
       <main>
-        <section className="landing-hero" aria-labelledby="atlas-title">
-          <img
-            className="landing-cover"
-            src={vista}
-            alt="Vista aérea da orla, da cidade e do porto de Santos."
-          />
-          <div className="landing-hero-copy">
-            <p className="landing-kicker">Estudo do meio · IFSP Araraquara</p>
-            <h1 id="atlas-title">
-              Atlas <em>Santos</em>
-            </h1>
-            <p className="landing-lead">
-              Os caminhos de uma viagem pelas fotografias e memórias de quem esteve lá.
-            </p>
-            <a className="landing-cta" href="#estudo">
-              Conheça o projeto <span aria-hidden="true">↓</span>
-            </a>
-          </div>
-          <div className="landing-caption">
-            <span>Santos, São Paulo</span>
-            <span>Vista aérea · Agência CNT</span>
-          </div>
-        </section>
-
-        <section id="estudo" className="landing-story" aria-labelledby="study-title">
-          <div>
-            <p className="landing-kicker">5 a 11 de outubro de 2026</p>
-            <h2 id="study-title">
-              Uma cidade,
-              <br />
-              <em>muitos olhares.</em>
-            </h2>
-            <p>
-              Durante sete dias, 83 estudantes e 12 servidores do IFSP Campus Araraquara
-              fizeram de Santos sua sala de aula. Cada equipe voltou com um percurso
-              próprio e fotografias para contar o que encontrou.
-            </p>
-            <p>
-              No Atlas, essas imagens vão ganhar lugar no mapa. As equipes poderão
-              revisitar os caminhos de cada dia e reunir suas reflexões em{" "}
-              <i>Olhares sobre Santos</i>.
-            </p>
-            <a className="landing-text-link" href="/login">
-              Acessar minha conta <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-          <figure>
-            <img
-              src={centro}
-              loading="lazy"
-              alt="Fachadas do Centro Histórico e a Bolsa Oficial de Café ao fundo."
-            />
-            <figcaption>
-              Centro Histórico <span>Bolsa Oficial de Café</span>
-            </figcaption>
-          </figure>
-        </section>
-        <aside className="landing-status" aria-label="Disponibilidade do Atlas">
-          <p>O acesso aos atlas está em preparação.</p>
-          <p role="status">{serviceStatus}</p>
-        </aside>
+        <p role="alert">Não foi possível consultar sua sessão.</p>
+        <button
+          onClick={() => {
+            setStatus("checking");
+            setAttempt(attempt + 1);
+          }}
+        >
+          Tentar novamente
+        </button>
       </main>
-      <Footer />
-    </div>
+    );
+  if (!account) return <LoginPage onLogin={enter} />;
+  return (
+    <Suspense fallback={<p role="status">Abrindo o atlas…</p>}>
+      {error && <p role="alert">{error}</p>}
+      {account.team ? (
+        <AtlasPage
+          account={account}
+          onLogout={leave}
+          leaving={leaving}
+          onSessionExpired={sessionExpired}
+        />
+      ) : (
+        <main>
+          <h1>{account.name}</h1>
+          <p>Sua conta ainda não tem uma equipe vinculada.</p>
+          <button onClick={leave} disabled={leaving}>
+            Sair
+          </button>
+        </main>
+      )}
+    </Suspense>
   );
 }
 

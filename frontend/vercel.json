@@ -1,3 +1,7 @@
 {
-  "rewrites": [{ "source": "/login", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/api/v1/:path*", "destination": "/api/railway?route=:path*" },
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/mapa", "destination": "/index.html" }
+  ]
 }

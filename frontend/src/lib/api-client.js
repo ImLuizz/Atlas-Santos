@@ -1,21 +1,19 @@
-import { config } from "./config";
-
 /**
  * Lightweight HTTP client wrapper for backend API communication.
  */
 export async function apiFetch(endpoint, options = {}) {
-  const url = `${config.apiBaseUrl}${endpoint}`;
   const defaultHeaders = {
-    "Content-Type": "application/json",
+    ...(options.body ? { "Content-Type": "application/json" } : {}),
+    ...(options.method === "POST" ? { "X-Atlas-Request": "1" } : {}),
   };
 
-  const response = await fetch(url, {
+  const response = await fetch(endpoint, {
     ...options,
     headers: {
       ...defaultHeaders,
       ...options.headers,
     },
-    credentials: "include", // send session cookies across origins
+    credentials: "include",
   });
 
   if (!response.ok) {

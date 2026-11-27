@@ -3,7 +3,7 @@ from logging.config import fileConfig
 
 from alembic import context
 from app.core.config import settings
-from app.db.base import Base
+from app.db.metadata import metadata
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -19,7 +19,7 @@ if config.config_file_name is not None:
 # Set database URL dynamically from app settings
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("%", "%%"))
 
-target_metadata = Base.metadata
+target_metadata = metadata
 
 
 def run_migrations_offline() -> None:
