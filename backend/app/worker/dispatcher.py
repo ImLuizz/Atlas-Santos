@@ -5,8 +5,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from app.core.config import settings
-from app.db.base import JobRecord, JobStatus
 from app.db.session import async_session_factory
+from app.worker.models import JobRecord, JobStatus
 from sqlalchemy import and_, or_, select, update
 
 logger = logging.getLogger(__name__)

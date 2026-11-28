@@ -45,3 +45,12 @@ async def require_team_captain(
             status_code=403, detail="Acesso reservado à capitania da equipe."
         )
     return user
+
+
+def require_roles(*roles: UserRole):
+    async def dependency(user: User = Depends(get_current_user)) -> User:
+        if user.role not in roles:
+            raise HTTPException(status_code=403, detail="Permissão insuficiente.")
+        return user
+
+    return dependency
