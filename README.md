@@ -12,20 +12,6 @@ De 5 a 11 de outubro de 2026, **83 estudantes e 12 servidores do IFSP Campus Ara
 
 A proposta é que estudantes e servidores escolham suas fotos e possam escrever sobre elas no **Olhares sobre Santos**. Os capitães revisam os registros de suas equipes. No mapa, cada fotografia com localização ajuda a reconstruir um trecho provável do percurso a pé.
 
-### Fases do desenvolvimento
-
-| Fase | Entrega | Critério de conclusão |
-| --- | --- | --- |
-| 1 · Acesso local e mapa 3D | Primeira tela do atlas da equipe | Os três perfis locais conseguem entrar, explorar Santos com edifícios em 3D, restaurar a vista inicial e sair. |
-| 2A · Acesso e equipes | Login pela API, sessão e atlas de cada equipe | O participante entra, atualiza o mapa e sai. A capitania consulta os integrantes da própria equipe. |
-| 2B · Pré-cadastro oficial | Importação e conciliação dos vínculos do IF-Arbitra e provisionamento por e-mail | Os 95 participantes recebem acesso à equipe correta. |
-| 3 · Acervo e curadoria | Envio de fotos, cotas, EXIF, localização e revisão pelo capitão | O participante acompanha a revisão. A galeria exibe os registros aprovados para aquele público. |
-| 4 · Fotografias e percursos no mapa | Marcadores e rotas a pé por equipe e dia, renderizados com deck.gl | O mapa apresenta as fotos autorizadas em ordem cronológica e os caminhos estimados. Retirar uma foto atualiza o percurso. |
-| 5 · Olhares sobre Santos | Reflexões opcionais por tema, descrições assistidas por IA e síntese da viagem | A equipe revisa as descrições e a síntese antes de incorporá-las ao atlas. |
-| 6 · Exportações e publicação | PDF e PNG, seguidos de HTML e GeoJSON, com homologação e deploy | As exportações respeitam os filtros e as permissões. A equipe valida a recuperação de backup e o funcionamento em produção. |
-
-A fase 2A está disponível para revisão local.
-
 ## Equipe
 
 - Bernardo Marcelino
@@ -204,16 +190,3 @@ Atlas-Santos/
 ```
 
 </details>
-
-## Onde está publicado
-
-A **Vercel** hospeda a interface. O **Railway** executa a API e o PostgreSQL. Para conferir a conexão do serviço publicado com o banco, consulte a [rota de saúde da API](https://atlas-santos-production.up.railway.app/health).
-
-### Homologação da 2A
-
-1. No ambiente de homologação do Railway, vincule a API a um PostgreSQL próprio via `DATABASE_URL`, configure `ENVIRONMENT=staging`, `COOKIE_SECURE=true` e use `alembic upgrade head` como comando de pré-deploy.
-2. Nesse ambiente, defina uma senha de teste exclusiva em `ATLAS_TEST_ACCOUNT_PASSWORD` (12 a 128 caracteres) e execute uma vez `python -m app.modules.auth.seed`. A API bloqueia o cadastro, o login e as sessões de contas `@atlas.test` em produção.
-3. Na Vercel, defina `ATLAS_API_ORIGIN` para **Preview** com a origem HTTPS dessa API (sem `/api`). Para **Production**, aponte a variável para a API de produção. Mantenha o token público do mapa em `VITE_MAPBOX_ACCESS_TOKEN`.
-4. Abra a prévia em `/mapa` e repita o fluxo dos três perfis. O navegador acessa `/api` no domínio da interface. A função `frontend/api/railway.js` encaminha as chamadas ao Railway, mantendo o cookie no domínio da prévia.
-
-A migração `coreatlas001` sucede a `access2a001` e acrescenta as tabelas de fotografias, temas, percursos, síntese e auditoria. Para testar a base importada da backend-core, inicie o Compose e abra a documentação da API em http://localhost:8000/docs. Os endpoints experimentais ficam disponíveis em desenvolvimento, teste e homologação. O armazenamento de fotos ainda é em memória, o percurso é aproximado e as integrações de IA e e-mail são simuladas. O frontend continua oferecendo o fluxo de acesso e mapa da fase 2A.
