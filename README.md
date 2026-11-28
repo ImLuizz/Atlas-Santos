@@ -6,7 +6,7 @@
 
 De 5 a 11 de outubro de 2026, **83 estudantes e 12 servidores do IFSP Campus Araraquara** participaram de um estudo do meio em Santos. O Atlas Santos nasceu para reunir as fotografias e reflexões dessa viagem. Cada equipe terá seu próprio atlas para contar o que observou e revisitar, dia a dia, os lugares por onde passou.
 
-**[Abrir o Atlas Santos](https://atlas-santos.vercel.app/) · [Consultar os requisitos](docs/requirements/requirements-summary.md)**
+**[Abrir o Atlas Santos](https://atlas-santos.vercel.app/) · [Consultar os requisitos](docs/requirements/requirements-summary.md) · [Diagrama do banco de dados](docs/banco-de-dados.md)**
 
 ## O projeto
 
@@ -190,3 +190,34 @@ Atlas-Santos/
 ```
 
 </details>
+
+## Contribuidores
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Bernardo270408">
+        <img src="https://github.com/Bernardo270408.png" width="100" alt="Bernardo Marcelino"/><br />
+        <sub><b>Bernardo Marcelino</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/ImLuizz">
+        <img src="https://github.com/ImLuizz.png" width="100" alt="Luiz Gabriel"/><br />
+        <sub><b>Luiz Gabriel</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Samuel-fernandesf">
+        <img src="https://github.com/Samuel-fernandesf.png" width="100" alt="Samuel Fernandes"/><br />
+        <sub><b>Samuel Fernandes</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/YagorVitor">
+        <img src="https://github.com/YagorVitor.png" width="100" alt="Yagor Santos"/><br />
+        <sub><b>Yagor Santos</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
