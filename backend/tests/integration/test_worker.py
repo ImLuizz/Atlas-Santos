@@ -2,8 +2,8 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from app.core.config import settings
-from app.db.base import JobRecord, JobStatus
 from app.worker.dispatcher import JobDispatcher
+from app.worker.models import JobRecord, JobStatus
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
